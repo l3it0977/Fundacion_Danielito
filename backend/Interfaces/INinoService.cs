@@ -21,6 +21,12 @@ public interface INinoService
     public Task<List<NinoDTO>> ObtenerTodos(int? maestroId);
 
     /// <summary>
+    /// Búsqueda con paginación para la lista de niños. Ordena por grupo y luego por apellido,
+    /// y respeta el filtro por maestro igual que ObtenerTodos.
+    /// </summary>
+    public Task<ResultadoPaginadoDTO<NinoDTO>> Buscar(BuscarNinosDTO filtro, int? maestroId);
+
+    /// <summary>
     /// Lista reducida de todos los niños, para elegir participantes al armar una
     /// actividad. No filtra por maestro y solo expone nombre, código y grupo.
     /// </summary>

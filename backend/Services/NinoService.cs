@@ -157,6 +157,64 @@ public class NinoService : INinoService
         return dto;
     }
 
+    //BUSCAR (CON PAGINACIÓN)
+    public async Task<ResultadoPaginadoDTO<NinoDTO>> Buscar(BuscarNinosDTO filtro, int? maestroId)
+    {
+        int tamano = Math.Clamp(filtro.Tamano, 1, 100);
+
+        IQueryable<Nino> consulta = _context.Ninos;
+
+        if (maestroId != null)
+        {
+            consulta = consulta.Where(x =>
+                x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
+        }
+
+        if (!filtro.IncluirInactivos)
+        {
+            consulta = consulta.Where(x => x.Activo);
+        }
+
+        if (filtro.GrupoId != null)
+        {
+            consulta = consulta.Where(x => x.GrupoId == filtro.GrupoId);
+        }
+
+        string? texto = filtro.Texto?.Trim().ToLower();
+        if (!string.IsNullOrEmpty(texto))
+        {
+            consulta = consulta.Where(x =>
+                (x.Nombres + " " + x.Apellidos).ToLower().Contains(texto) ||
+                x.Codigo.ToLower().Contains(texto));
+        }
+
+        int total = await consulta.CountAsync();
+
+        // Si piden una página que no existe (por ejemplo tras desactivar al último de la
+        // última página), se entrega la última en lugar de una lista vacía.
+        int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)tamano));
+        int pagina = Math.Clamp(filtro.Pagina, 1, totalPaginas);
+
+        List<Nino> lstNinos = await consulta
+            .Include(x => x.Grupo)
+                .ThenInclude(x => x.Grupo_Maestros)
+                    .ThenInclude(x => x.Perfil)
+            .OrderBy(x => x.GrupoId)
+            .ThenBy(x => x.Apellidos)
+            .ThenBy(x => x.Nombres)
+            .Skip((pagina - 1) * tamano)
+            .Take(tamano)
+            .ToListAsync();
+
+        return new ResultadoPaginadoDTO<NinoDTO>
+        {
+            Items = _mapper.Map<List<NinoDTO>>(lstNinos),
+            Total = total,
+            Pagina = pagina,
+            Tamano = tamano
+        };
+    }
+
     //OBTENER PARA SELECCION
     public async Task<List<NinoSeleccionDTO>> ObtenerParaSeleccion()
     {

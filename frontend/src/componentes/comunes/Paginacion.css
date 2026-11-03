@@ -1,0 +1,37 @@
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  margin-top: var(--espacio-4);
+  padding: var(--espacio-3) var(--espacio-4);
+
+  background: var(--blanco);
+  border-radius: var(--radio-medio);
+  box-shadow: var(--sombra);
+}
+
+.paginacion__texto {
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--texto-medio);
+}
+
+.paginacion__botones {
+  display: flex;
+  gap: var(--espacio-2);
+}
+
+@media (max-width: 600px) {
+  .paginacion {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .paginacion__botones .boton {
+    flex: 1;
+  }
+}

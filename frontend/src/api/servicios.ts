@@ -10,6 +10,7 @@ import type {
   PanelGeneral,
   PanelMaestro,
   Perfil,
+  ResultadoPaginado,
   RespuestaAutenticacion,
   Usuario,
   Visita,
@@ -43,6 +44,19 @@ export const servicioGrupos = {
 
 export const servicioNinos = {
   listar: () => api.obtener<Nino[]>('/Nino'),
+
+  /** Búsqueda y paginación en el servidor, para la lista de niños. */
+  buscar: (filtros: { texto?: string; incluirInactivos?: boolean; pagina?: number; tamano?: number }) => {
+    const consulta = new URLSearchParams();
+
+    if (filtros.texto) consulta.set('texto', filtros.texto);
+    if (filtros.incluirInactivos) consulta.set('incluirInactivos', 'true');
+    if (filtros.pagina) consulta.set('pagina', String(filtros.pagina));
+    if (filtros.tamano) consulta.set('tamano', String(filtros.tamano));
+
+    return api.obtener<ResultadoPaginado<Nino>>(`/Nino/Buscar?${consulta.toString()}`);
+  },
+
   obtener: (id: number) => api.obtener<Nino>(`/Nino/${id}`),
   crear: (datos: Partial<Nino>) => api.crear<string>('/Nino', datos),
   actualizar: (datos: Partial<Nino>) => api.actualizar<string>('/Nino', datos),
@@ -164,6 +178,12 @@ export const servicioReportes = {
     api.descargar(
       `/Reporte/Asistencia?${armarConsulta(filtros)}`,
       `asistencia-${nombrePeriodo(filtros)}.pdf`,
+    ),
+  /** Los mismos datos del PDF de asistencia, en una hoja de cálculo para analizarlos. */
+  asistenciaExcel: (filtros: FiltrosReporte) =>
+    api.descargar(
+      `/Reporte/AsistenciaExcel?${armarConsulta(filtros)}`,
+      `asistencia-${nombrePeriodo(filtros)}.xlsx`,
     ),
   actividades: (filtros: FiltrosReporte) =>
     api.descargar(

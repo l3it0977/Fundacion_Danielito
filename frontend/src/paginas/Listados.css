@@ -41,6 +41,20 @@
   min-width: 200px;
 }
 
+/* Mientras se pide otra página o una búsqueda, la lista anterior queda visible pero atenuada. */
+.lista-actualizando {
+  opacity: 0.55;
+  transition: opacity var(--transicion);
+  pointer-events: none;
+}
+
+/* Botones de descarga de un reporte, uno junto al otro. */
+.acciones-reporte {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
 /* La casilla no necesita estirarse; se alinea con la base del campo de búsqueda. */
 .filtros__campo--casilla {
   flex: 0 0 auto;

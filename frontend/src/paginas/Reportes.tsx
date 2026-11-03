@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileDown } from 'lucide-react';
+import { FileDown, FileSpreadsheet } from 'lucide-react';
 import { servicioGrupos, servicioReportes } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
@@ -123,15 +123,29 @@ export function Reportes() {
           <strong> Se generará para: {textoGrupo}, {textoPeriodo}.</strong>
         </p>
 
-        <Boton
-          cargando={descargando === 'asistencia'}
-          icono={<FileDown size={18} />}
-          onClick={() =>
-            descargar('asistencia', () => servicioReportes.asistencia(filtros))
-          }
-        >
-          Descargar asistencia
-        </Boton>
+        <div className="acciones-reporte">
+          <Boton
+            cargando={descargando === 'asistencia'}
+            icono={<FileDown size={18} />}
+            onClick={() =>
+              descargar('asistencia', () => servicioReportes.asistencia(filtros))
+            }
+          >
+            Descargar PDF
+          </Boton>
+
+          {/* Mismas cifras en celdas, con filtros y fechas reales, para analizarlas o graficarlas. */}
+          <Boton
+            variante="contorno"
+            cargando={descargando === 'asistencia-excel'}
+            icono={<FileSpreadsheet size={18} />}
+            onClick={() =>
+              descargar('asistencia-excel', () => servicioReportes.asistenciaExcel(filtros))
+            }
+          >
+            Descargar Excel
+          </Boton>
+        </div>
       </Panel>
 
       <Panel titulo="Actividades">
@@ -148,7 +162,7 @@ export function Reportes() {
             descargar('actividades', () => servicioReportes.actividades(filtros))
           }
         >
-          Descargar actividades
+          Descargar PDF
         </Boton>
       </Panel>
 

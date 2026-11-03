@@ -72,6 +72,16 @@ export interface Nino {
   edad: number | null;
 }
 
+/** Una página de resultados del servidor. */
+export interface ResultadoPaginado<T> {
+  items: T[];
+  total: number;
+  /** La página realmente devuelta: si se pidió una inexistente, es la última. */
+  pagina: number;
+  tamano: number;
+  totalPaginas: number;
+}
+
 export type TipoActividad = 'normal' | 'intervencion';
 
 export interface Actividad {

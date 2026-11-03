@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, Eye, Pencil, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-react';
 import { servicioNinos } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
+import { useRetraso } from '../hooks/useRetraso';
 import { useAutenticacion } from '../contextos/ContextoAutenticacion';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Boton } from '../componentes/comunes/Boton';
@@ -11,16 +12,34 @@ import { Cargando, MensajeError, SinDatos } from '../componentes/comunes/Estados
 import { Insignia } from '../componentes/comunes/Insignia';
 import { CampoCasilla, CampoTexto } from '../componentes/comunes/Campos';
 import { DialogoConfirmacion } from '../componentes/comunes/DialogoConfirmacion';
+import { Paginacion } from '../componentes/comunes/Paginacion';
 import type { Nino } from '../tipos';
 import './Listados.css';
 
+const NINOS_POR_PAGINA = 25;
+
 export function Ninos() {
   const { tieneRol } = useAutenticacion();
-  const { datos: ninos, cargando, error, recargar } = useCargarDatos(servicioNinos.listar);
 
   const [busqueda, setBusqueda] = useState('');
+  // Se espera a que deje de escribir para no consultar al servidor con cada letra.
+  const textoBuscado = useRetraso(busqueda.trim());
   // Los inactivos se ocultan por defecto: siguen en el sistema con su historial.
   const [verInactivos, setVerInactivos] = useState(false);
+  const [pagina, setPagina] = useState(1);
+
+  // La búsqueda y la paginación las hace el servidor: la lista sigue ágil con miles de fichas.
+  const { datos: resultado, cargando, error, recargar } = useCargarDatos(
+    () =>
+      servicioNinos.buscar({
+        texto: textoBuscado,
+        incluirInactivos: verInactivos,
+        pagina,
+        tamano: NINOS_POR_PAGINA,
+      }),
+    [textoBuscado, verInactivos, pagina],
+  );
+
   const [ninoAEliminar, setNinoAEliminar] = useState<Nino | null>(null);
   const [ninoACambiarEstado, setNinoACambiarEstado] = useState<Nino | null>(null);
   const [aviso, setAviso] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
@@ -28,33 +47,18 @@ export function Ninos() {
 
   const puedeEditar = tieneRol('Directora', 'Administrador');
 
-  // Se filtra y agrupa sobre los datos ya cargados, sin volver a consultar la API.
+  // El servidor ya entrega los niños ordenados por grupo (de menor a mayor edad), así que
+  // basta con ir agrupando en ese mismo orden. Una página puede cortar un grupo por la mitad.
   const ninosPorGrupo = useMemo(() => {
-    if (!ninos) {
-      return [];
-    }
-
-    const textoBuscado = busqueda.trim().toLowerCase();
-
-    const visibles = verInactivos ? ninos : ninos.filter((nino) => nino.activo);
-
-    const coincidentes = textoBuscado
-      ? visibles.filter((nino) =>
-          `${nino.nombres} ${nino.apellidos} ${nino.codigo}`.toLowerCase().includes(textoBuscado),
-        )
-      : visibles;
-
     const agrupados = new Map<string, Nino[]>();
 
-    for (const nino of coincidentes) {
+    for (const nino of resultado?.items ?? []) {
       const nombreGrupo = nino.nombre_Grupo || 'Sin grupo';
       agrupados.set(nombreGrupo, [...(agrupados.get(nombreGrupo) ?? []), nino]);
     }
 
-    return [...agrupados.entries()].sort((unGrupo, otroGrupo) =>
-      unGrupo[0].localeCompare(otroGrupo[0]),
-    );
-  }, [ninos, busqueda, verInactivos]);
+    return [...agrupados.entries()];
+  }, [resultado]);
 
   async function cambiarEstado() {
     if (!ninoACambiarEstado) {
@@ -97,7 +101,9 @@ export function Ninos() {
     }
   }
 
-  if (cargando) {
+  // Pantalla de carga solo la primera vez: al buscar o cambiar de página la lista
+  // se queda visible, atenuada, para no perder el foco del campo de búsqueda.
+  if (cargando && !resultado) {
     return <Cargando mensaje="Cargando niños…" />;
   }
 
@@ -105,7 +111,7 @@ export function Ninos() {
     return <MensajeError mensaje={error} />;
   }
 
-  const totalEncontrados = ninosPorGrupo.reduce((suma, [, lista]) => suma + lista.length, 0);
+  const totalEncontrados = resultado?.total ?? 0;
 
   return (
     <div className="pagina">
@@ -139,7 +145,10 @@ export function Ninos() {
             type="search"
             placeholder="Nombre, apellido o código"
             value={busqueda}
-            onChange={(evento) => setBusqueda(evento.target.value)}
+            onChange={(evento) => {
+              setBusqueda(evento.target.value);
+              setPagina(1);
+            }}
           />
         </div>
 
@@ -147,7 +156,10 @@ export function Ninos() {
           <CampoCasilla
             etiqueta="Mostrar inactivos"
             checked={verInactivos}
-            onChange={(evento) => setVerInactivos(evento.target.checked)}
+            onChange={(evento) => {
+              setVerInactivos(evento.target.checked);
+              setPagina(1);
+            }}
           />
         </div>
 
@@ -157,111 +169,123 @@ export function Ninos() {
         </p>
       </div>
 
-      {ninosPorGrupo.length === 0 ? (
-        <SinDatos
-          mensaje={
-            busqueda
-              ? `No se encontraron niños que coincidan con "${busqueda}".`
-              : verInactivos
-                ? 'Todavía no hay niños registrados.'
-                : 'No hay niños activos. Marca "Mostrar inactivos" para ver los demás.'
-          }
-        />
-      ) : (
-        ninosPorGrupo.map(([nombreGrupo, listaDelGrupo]) => (
-          <details key={nombreGrupo} className="grupo-plegable" open>
-            <summary className="grupo-plegable__resumen">
-              <span className="grupo-plegable__titulo">
-                {nombreGrupo}
-                <Insignia texto={`${listaDelGrupo.length}`} tono="teal" />
-              </span>
+      <div className={cargando ? 'lista-actualizando' : undefined} aria-busy={cargando}>
+        {ninosPorGrupo.length === 0 ? (
+          <SinDatos
+            mensaje={
+              textoBuscado
+                ? `No se encontraron niños que coincidan con "${textoBuscado}".`
+                : verInactivos
+                  ? 'Todavía no hay niños registrados.'
+                  : 'No hay niños activos. Marca "Mostrar inactivos" para ver los demás.'
+            }
+          />
+        ) : (
+          ninosPorGrupo.map(([nombreGrupo, listaDelGrupo]) => (
+            <details key={nombreGrupo} className="grupo-plegable" open>
+              <summary className="grupo-plegable__resumen">
+                <span className="grupo-plegable__titulo">
+                  {nombreGrupo}
+                  <Insignia texto={`${listaDelGrupo.length}`} tono="teal" />
+                </span>
 
-              <ChevronDown className="grupo-plegable__flecha" size={20} aria-hidden="true" />
-            </summary>
+                <ChevronDown className="grupo-plegable__flecha" size={20} aria-hidden="true" />
+              </summary>
 
-            <div className="tabla-contenedor">
-              <table className="tabla">
-                <thead>
-                  <tr>
-                    <th scope="col">Código</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Edad</th>
-                    <th scope="col">Maestros</th>
-                    <th scope="col">Estado</th>
-                    <th scope="col">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {listaDelGrupo.map((nino) => (
-                    <tr key={nino.id}>
-                      <td data-etiqueta="Código">{nino.codigo}</td>
-                      <td data-etiqueta="Nombre">
-                        <strong>
-                          {nino.nombres} {nino.apellidos}
-                        </strong>
-                        {nino.vulnerable && (
-                          <span className="tabla__secundario">
-                            <Insignia texto="Vulnerable" tono="advertencia" />
-                          </span>
-                        )}
-                      </td>
-                      <td data-etiqueta="Edad">{nino.edad != null ? `${nino.edad} años` : '—'}</td>
-                      <td data-etiqueta="Maestros">
-                        {nino.nombres_Maestros.length > 0
-                          ? nino.nombres_Maestros.join(', ')
-                          : '—'}
-                      </td>
-                      <td data-etiqueta="Estado">
-                        <Insignia
-                          texto={nino.activo ? 'Activo' : 'Inactivo'}
-                          tono={nino.activo ? 'exito' : 'neutro'}
-                        />
-                      </td>
-                      <td data-etiqueta="Acciones">
-                        <div className="tabla__acciones">
-                          <Link to={`/ninos/${nino.id}`} className="enlace-boton">
-                            <Eye size={14} aria-hidden="true" />
-                            Ver
-                          </Link>
-
-                          {puedeEditar && (
-                            <>
-                              <Link
-                                to={`/ninos/${nino.id}/editar`}
-                                className="enlace-boton enlace-boton--naranja"
-                              >
-                                <Pencil size={14} aria-hidden="true" />
-                                Editar
-                              </Link>
-
-                              <Boton
-                                tamano="chico"
-                                variante="contorno"
-                                onClick={() => setNinoACambiarEstado(nino)}
-                                icono={nino.activo ? <UserX size={14} /> : <UserCheck size={14} />}
-                              >
-                                {nino.activo ? 'Desactivar' : 'Activar'}
-                              </Boton>
-
-                              <Boton
-                                tamano="chico"
-                                variante="peligro"
-                                onClick={() => setNinoAEliminar(nino)}
-                                icono={<Trash2 size={14} />}
-                              >
-                                Eliminar
-                              </Boton>
-                            </>
-                          )}
-                        </div>
-                      </td>
+              <div className="tabla-contenedor">
+                <table className="tabla">
+                  <thead>
+                    <tr>
+                      <th scope="col">Código</th>
+                      <th scope="col">Nombre</th>
+                      <th scope="col">Edad</th>
+                      <th scope="col">Maestros</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col">Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        ))
+                  </thead>
+                  <tbody>
+                    {listaDelGrupo.map((nino) => (
+                      <tr key={nino.id}>
+                        <td data-etiqueta="Código">{nino.codigo}</td>
+                        <td data-etiqueta="Nombre">
+                          <strong>
+                            {nino.nombres} {nino.apellidos}
+                          </strong>
+                          {nino.vulnerable && (
+                            <span className="tabla__secundario">
+                              <Insignia texto="Vulnerable" tono="advertencia" />
+                            </span>
+                          )}
+                        </td>
+                        <td data-etiqueta="Edad">{nino.edad != null ? `${nino.edad} años` : '—'}</td>
+                        <td data-etiqueta="Maestros">
+                          {nino.nombres_Maestros.length > 0
+                            ? nino.nombres_Maestros.join(', ')
+                            : '—'}
+                        </td>
+                        <td data-etiqueta="Estado">
+                          <Insignia
+                            texto={nino.activo ? 'Activo' : 'Inactivo'}
+                            tono={nino.activo ? 'exito' : 'neutro'}
+                          />
+                        </td>
+                        <td data-etiqueta="Acciones">
+                          <div className="tabla__acciones">
+                            <Link to={`/ninos/${nino.id}`} className="enlace-boton">
+                              <Eye size={14} aria-hidden="true" />
+                              Ver
+                            </Link>
+
+                            {puedeEditar && (
+                              <>
+                                <Link
+                                  to={`/ninos/${nino.id}/editar`}
+                                  className="enlace-boton enlace-boton--naranja"
+                                >
+                                  <Pencil size={14} aria-hidden="true" />
+                                  Editar
+                                </Link>
+
+                                <Boton
+                                  tamano="chico"
+                                  variante="contorno"
+                                  onClick={() => setNinoACambiarEstado(nino)}
+                                  icono={nino.activo ? <UserX size={14} /> : <UserCheck size={14} />}
+                                >
+                                  {nino.activo ? 'Desactivar' : 'Activar'}
+                                </Boton>
+
+                                <Boton
+                                  tamano="chico"
+                                  variante="peligro"
+                                  onClick={() => setNinoAEliminar(nino)}
+                                  icono={<Trash2 size={14} />}
+                                >
+                                  Eliminar
+                                </Boton>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          ))
+        )}
+      </div>
+
+      {resultado && (
+        <Paginacion
+          pagina={resultado.pagina}
+          totalPaginas={resultado.totalPaginas}
+          resumen={`${resultado.total} ${resultado.total === 1 ? 'niño' : 'niños'}`}
+          alCambiar={setPagina}
+          ocupado={cargando}
+        />
       )}
 
       {ninoACambiarEstado && (

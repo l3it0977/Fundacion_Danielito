@@ -33,6 +33,16 @@ public class NinoController : ControllerBase
         return await _ninoService.ObtenerTodos(User.FiltroMaestro());
     }
 
+    //BUSCAR (CON PAGINACIÓN)
+    // Para la pantalla de niños: el filtrado y la paginación se hacen en el servidor,
+    // así la lista sigue siendo ágil aunque haya miles de fichas.
+    [Authorize]
+    [HttpGet("Buscar")]
+    public async Task<ResultadoPaginadoDTO<NinoDTO>> GetBuscar([FromQuery] BuscarNinosDTO filtro)
+    {
+        return await _ninoService.Buscar(filtro, User.FiltroMaestro());
+    }
+
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
