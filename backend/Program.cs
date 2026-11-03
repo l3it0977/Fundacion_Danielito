@@ -97,6 +97,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<AppIdentityContext>();
 
 // Configuración de servicios para inyección de dependencias
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGrupoService, GrupoService>();
 builder.Services.AddScoped<INinoService, NinoService>();
 builder.Services.AddScoped<IActividadService, ActividadService>();

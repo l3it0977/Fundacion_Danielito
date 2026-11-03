@@ -22,3 +22,14 @@ public class ReglaNegocioException : Exception
     {
     }
 }
+
+/// <summary>
+/// Se lanza cuando falla el inicio de sesión: credenciales incorrectas, cuenta bloqueada o inactiva.
+/// El middleware la traduce a un HTTP 401 (No autenticado).
+/// </summary>
+public class AutenticacionFallidaException : Exception
+{
+    public AutenticacionFallidaException(string mensaje) : base(mensaje)
+    {
+    }
+}

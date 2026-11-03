@@ -60,6 +60,11 @@ public class ManejadorErroresMiddleware
                 mensajeParaElCliente = excepcion.Message;
                 break;
 
+            case AutenticacionFallidaException:
+                codigoHttp = StatusCodes.Status401Unauthorized;
+                mensajeParaElCliente = excepcion.Message;
+                break;
+
             case UnauthorizedAccessException:
                 codigoHttp = StatusCodes.Status403Forbidden;
                 mensajeParaElCliente = excepcion.Message;
