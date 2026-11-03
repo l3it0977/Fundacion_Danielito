@@ -49,12 +49,9 @@ public class ReporteService : IReporteService
         }
 
         // Asistencias del periodo: alimentan los totales y las celdas de la matriz.
-        var consulta = _context.Asistencias.Where(x => x.Fecha.Year == anio);
-
-        if (mes.HasValue)
-        {
-            consulta = consulta.Where(x => x.Fecha.Month == mes.Value);
-        }
+        // Rango de fechas y no Year/Month: así PostgreSQL puede usar el índice de Fecha.
+        var (inicio, fin) = RangoDelPeriodo(mes, anio);
+        var consulta = _context.Asistencias.Where(x => x.Fecha >= inicio && x.Fecha < fin);
 
         if (grupoId.HasValue)
         {
@@ -219,12 +216,9 @@ public class ReporteService : IReporteService
             }
         }
 
-        var consulta = _context.Actividades.Where(x => x.Fecha_Actividad.Year == anio);
-
-        if (mes.HasValue)
-        {
-            consulta = consulta.Where(x => x.Fecha_Actividad.Month == mes.Value);
-        }
+        var (inicio, fin) = RangoDelPeriodo(mes, anio);
+        var consulta = _context.Actividades
+            .Where(x => x.Fecha_Actividad >= inicio && x.Fecha_Actividad < fin);
 
         bool filtrarGrupo = grupoId.HasValue;
         int idGrupo = grupoId ?? 0;
@@ -748,6 +742,15 @@ public class ReporteService : IReporteService
 
         // GetMonthName devuelve el nombre en minúscula.
         return char.ToUpper(nombre[0]) + nombre[1..];
+    }
+
+    /// <summary>Desde el primer día del periodo (incluido) hasta el siguiente al último (excluido).</summary>
+    private static (DateTime Inicio, DateTime Fin) RangoDelPeriodo(int? mes, int anio)
+    {
+        DateTime inicio = new(anio, mes ?? 1, 1);
+        DateTime fin = mes.HasValue ? inicio.AddMonths(1) : inicio.AddYears(1);
+
+        return (inicio, fin);
     }
 
     private static void ValidarPeriodo(int? mes, int anio)

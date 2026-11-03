@@ -74,6 +74,9 @@ public class AppProyectoContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Actividad>()
+            .HasIndex(x => x.Fecha_Actividad);
+
+        modelBuilder.Entity<Actividad>()
             .ToTable(t => t.HasCheckConstraint(
                 "CK_Actividades_Tipo",
                 "\"Tipo\" IN ('normal', 'intervencion')"));
@@ -103,6 +106,10 @@ public class AppProyectoContext : DbContext
         modelBuilder.Entity<Asistencia>()
             .HasIndex(x => new { x.ActividadId, x.NinoId, x.Fecha })
             .IsUnique();
+
+        // Los reportes y el panel filtran por rango de fechas.
+        modelBuilder.Entity<Asistencia>()
+            .HasIndex(x => x.Fecha);
 
         // 'pendiente' es el estado con el que nace la lista al crear la actividad.
         modelBuilder.Entity<Asistencia>()

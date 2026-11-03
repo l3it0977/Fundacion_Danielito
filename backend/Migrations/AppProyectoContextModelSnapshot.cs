@@ -56,6 +56,8 @@ namespace SISTEMADANIELITO.Migrations
 
                     b.HasIndex("CreadoPorId");
 
+                    b.HasIndex("Fecha_Actividad");
+
                     b.ToTable("Actividades", t =>
                         {
                             t.HasCheckConstraint("CK_Actividades_Tipo", "\"Tipo\" IN ('normal', 'intervencion')");
@@ -109,6 +111,8 @@ namespace SISTEMADANIELITO.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Fecha");
 
                     b.HasIndex("NinoId");
 

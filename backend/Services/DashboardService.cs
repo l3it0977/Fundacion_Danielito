@@ -109,12 +109,13 @@ public class DashboardService : IDashboardService
         IQueryable<Nino> misNinos = _context.Ninos
             .Where(x => x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
 
-        int mesActual = DateTime.Today.Month;
-        int anioActual = DateTime.Today.Year;
+        // Rango de fechas y no Month/Year: así PostgreSQL puede usar el índice de Fecha.
+        DateTime inicioDelMes = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+        DateTime inicioDelMesSiguiente = inicioDelMes.AddMonths(1);
 
         List<ConteoPorEstado> conteoDelMes = _context.Asistencias
             .Where(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId))
-            .Where(x => x.Fecha.Month == mesActual && x.Fecha.Year == anioActual)
+            .Where(x => x.Fecha >= inicioDelMes && x.Fecha < inicioDelMesSiguiente)
             .GroupBy(x => x.Estado)
             .Select(grupo => new ConteoPorEstado { Estado = grupo.Key, Cantidad = grupo.Count() })
             .ToList();
