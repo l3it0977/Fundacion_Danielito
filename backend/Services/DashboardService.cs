@@ -110,8 +110,8 @@ public class DashboardService : IDashboardService
             .Where(x => x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
 
         // Rango de fechas y no Month/Year: así PostgreSQL puede usar el índice de Fecha.
-        DateTime inicioDelMes = new(DateTime.Today.Year, DateTime.Today.Month, 1);
-        DateTime inicioDelMesSiguiente = inicioDelMes.AddMonths(1);
+        DateOnly inicioDelMes = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+        DateOnly inicioDelMesSiguiente = inicioDelMes.AddMonths(1);
 
         List<ConteoPorEstado> conteoDelMes = _context.Asistencias
             .Where(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId))
@@ -170,7 +170,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     private List<CumpleanosDTO> ObtenerCumpleanosCercanos(int maestroId)
     {
-        DateTime hoy = DateTime.Today;
+        DateOnly hoy = DateOnly.FromDateTime(DateTime.Today);
 
         var ninosConFecha = _context.Ninos
             .Where(x => x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId)
@@ -188,16 +188,16 @@ public class DashboardService : IDashboardService
 
         foreach (var nino in ninosConFecha)
         {
-            DateTime nacimiento = nino.Fecha_Nacimiento.Date;
+            DateOnly nacimiento = nino.Fecha_Nacimiento;
 
             // Se ubica el cumpleaños en el año actual; si ya pasó, se pasa al año siguiente.
-            DateTime proximoCumple = ConstruirCumple(nacimiento, hoy.Year);
+            DateOnly proximoCumple = ConstruirCumple(nacimiento, hoy.Year);
             if (proximoCumple < hoy)
             {
                 proximoCumple = ConstruirCumple(nacimiento, hoy.Year + 1);
             }
 
-            int diasRestantes = (proximoCumple - hoy).Days;
+            int diasRestantes = proximoCumple.DayNumber - hoy.DayNumber;
             if (diasRestantes > 30)
             {
                 continue;
@@ -223,12 +223,12 @@ public class DashboardService : IDashboardService
     /// Arma la fecha del cumpleaños en el año indicado. Contempla a los nacidos un 29 de
     /// febrero: en años no bisiestos su cumpleaños se toma como el 28.
     /// </summary>
-    private static DateTime ConstruirCumple(DateTime nacimiento, int anio)
+    private static DateOnly ConstruirCumple(DateOnly nacimiento, int anio)
     {
         int diasDelMes = DateTime.DaysInMonth(anio, nacimiento.Month);
         int dia = Math.Min(nacimiento.Day, diasDelMes);
 
-        return new DateTime(anio, nacimiento.Month, dia);
+        return new DateOnly(anio, nacimiento.Month, dia);
     }
 
     /// <summary>Busca cuántas asistencias hay de un estado; 0 si ese estado no aparece.</summary>

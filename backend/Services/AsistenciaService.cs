@@ -219,7 +219,7 @@ public class AsistenciaService : IAsistenciaService
     }
 
     /// <summary>Una sesión no puede registrarse antes de la fecha de su actividad.</summary>
-    private void ValidarFecha(int actividadId, DateTime fecha)
+    private void ValidarFecha(int actividadId, DateOnly fecha)
     {
         Actividad? bdActividad = _context.Actividades.FirstOrDefault(x => x.Id.Equals(actividadId));
         if (bdActividad == null)
@@ -227,7 +227,7 @@ public class AsistenciaService : IAsistenciaService
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
         }
 
-        if (fecha.Date < bdActividad.Fecha_Actividad.Date)
+        if (fecha < bdActividad.Fecha_Actividad)
         {
             throw (new ReglaNegocioException("La fecha no puede ser anterior a la fecha de la actividad"));
         }

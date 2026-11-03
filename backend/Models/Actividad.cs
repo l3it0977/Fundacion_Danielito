@@ -21,7 +21,7 @@ public class Actividad
     // Obligatoria: al crear la actividad se genera su lista de asistencia,
     // y esa lista necesita un día concreto al que corresponder.
     [Required(ErrorMessage = "La fecha de la actividad es obligatoria")]
-    public DateTime Fecha_Actividad { get; set; }
+    public DateOnly Fecha_Actividad { get; set; }
 
     [Required(ErrorMessage = "El tipo es obligatorio")]
     [StringLength(50)]

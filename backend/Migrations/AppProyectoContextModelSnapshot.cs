@@ -39,8 +39,8 @@ namespace SISTEMADANIELITO.Migrations
                     b.Property<string>("Descripcion")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("Fecha_Actividad")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateOnly>("Fecha_Actividad")
+                        .HasColumnType("date");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -95,8 +95,8 @@ namespace SISTEMADANIELITO.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
 
                     b.Property<string>("Motivo_Justificacion")
                         .HasColumnType("text");
@@ -205,8 +205,8 @@ namespace SISTEMADANIELITO.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<DateTime?>("Fecha_Nacimiento")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateOnly?>("Fecha_Nacimiento")
+                        .HasColumnType("date");
 
                     b.Property<bool>("Fue_Al_Encuentro")
                         .HasColumnType("boolean");
@@ -296,8 +296,8 @@ namespace SISTEMADANIELITO.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("Fecha_Visita")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateOnly>("Fecha_Visita")
+                        .HasColumnType("date");
 
                     b.Property<string>("Motivo")
                         .HasColumnType("text");

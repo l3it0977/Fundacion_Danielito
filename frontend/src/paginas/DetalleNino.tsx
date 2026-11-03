@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil } from 'lucide-react';
 import { servicioNinos } from '../api/servicios';
+import { formatearFecha } from '../utilidades/fechas';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { useAutenticacion } from '../contextos/ContextoAutenticacion';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
@@ -49,7 +50,7 @@ export function DetalleNino() {
   }
 
   const fechaNacimiento = nino.fecha_Nacimiento
-    ? new Date(nino.fecha_Nacimiento).toLocaleDateString('es-BO')
+    ? formatearFecha(nino.fecha_Nacimiento)
     : null;
 
   return (

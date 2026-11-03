@@ -359,7 +359,7 @@ public class ReporteService : IReporteService
 
         // Cada fecha distinta es una sesión de la actividad.
         var sesiones = registros
-            .GroupBy(x => x.Fecha.Date)
+            .GroupBy(x => x.Fecha)
             .OrderBy(sesion => sesion.Key)
             .ToList();
 
@@ -753,10 +753,10 @@ public class ReporteService : IReporteService
     }
 
     /// <summary>Desde el primer día del periodo (incluido) hasta el siguiente al último (excluido).</summary>
-    private static (DateTime Inicio, DateTime Fin) RangoDelPeriodo(int? mes, int anio)
+    private static (DateOnly Inicio, DateOnly Fin) RangoDelPeriodo(int? mes, int anio)
     {
-        DateTime inicio = new(anio, mes ?? 1, 1);
-        DateTime fin = mes.HasValue ? inicio.AddMonths(1) : inicio.AddYears(1);
+        DateOnly inicio = new(anio, mes ?? 1, 1);
+        DateOnly fin = mes.HasValue ? inicio.AddMonths(1) : inicio.AddYears(1);
 
         return (inicio, fin);
     }
@@ -776,7 +776,7 @@ public class ReporteService : IReporteService
 
     //TIPOS INTERNOS
 
-    private sealed record RegistroAsistencia(int NinoId, int GrupoId, DateTime Fecha, string Estado);
+    private sealed record RegistroAsistencia(int NinoId, int GrupoId, DateOnly Fecha, string Estado);
 
     private sealed record NinoDelReporte(int Id, int GrupoId, string Nombre_Completo, bool Activo);
 

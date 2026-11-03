@@ -24,7 +24,7 @@ public class Asistencia
     // Una actividad puede tener varias sesiones, por eso la fecha es parte de la identidad
     // del registro junto con la actividad y el niño.
     [Required]
-    public DateTime Fecha { get; set; }
+    public DateOnly Fecha { get; set; }
 
     [Required(ErrorMessage = "El estado es obligatorio")]
     [StringLength(20)]

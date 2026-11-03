@@ -37,8 +37,8 @@ public class NinoServiceTests : IDisposable
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
         var nino = _bd.CrearNino(grupo, "N-1");
-        var actividad = _bd.CrearActividad(maestro, new DateTime(2026, 10, 1), nino);
-        _bd.CrearAsistencia(actividad, nino, new DateTime(2026, 10, 1), Asistencia.EstadoPresente, maestro);
+        var actividad = _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
+        _bd.CrearAsistencia(actividad, nino, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, maestro);
 
         Assert.Throws<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
 
@@ -52,7 +52,7 @@ public class NinoServiceTests : IDisposable
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
         var nino = _bd.CrearNino(grupo, "N-1");
-        _bd.CrearActividad(maestro, new DateTime(2026, 10, 1), nino);
+        _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
 
         Assert.Throws<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
     }
@@ -69,8 +69,8 @@ public class NinoServiceTests : IDisposable
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
         var nino = _bd.CrearNino(grupo, "N-1");
-        var actividad = _bd.CrearActividad(maestro, new DateTime(2026, 10, 1), nino);
-        _bd.CrearAsistencia(actividad, nino, new DateTime(2026, 10, 1), Asistencia.EstadoPresente, maestro);
+        var actividad = _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
+        _bd.CrearAsistencia(actividad, nino, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, maestro);
 
         // ExecuteDelete va directo a la base, sin que EF intervenga: es la red de seguridad
         // (DeleteBehavior.Restrict). Sin ella el borrado arrastraría la asistencia.
@@ -87,8 +87,8 @@ public class NinoServiceTests : IDisposable
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
         var nino = _bd.CrearNino(grupo, "N-1");
         var otro = _bd.CrearNino(grupo, "N-2");
-        var actividad = _bd.CrearActividad(maestro, new DateTime(2026, 10, 1), nino);
-        _bd.CrearAsistencia(actividad, nino, new DateTime(2026, 10, 1), Asistencia.EstadoPresente, maestro);
+        var actividad = _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
+        _bd.CrearAsistencia(actividad, nino, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, maestro);
 
         _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = nino.Id, Activo = false });
 

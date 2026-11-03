@@ -8,7 +8,7 @@ public class Visita
     public int Id { get; set; }
 
     [Required]
-    public DateTime Fecha_Visita { get; set; }
+    public DateOnly Fecha_Visita { get; set; }
 
     public string? Motivo { get; set; }
 

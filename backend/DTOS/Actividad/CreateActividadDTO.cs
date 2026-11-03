@@ -6,7 +6,7 @@ public class CreateActividadDTO
     public string? Descripcion { get; set; }
 
     // Obligatoria: con ella se genera la lista de asistencia de la actividad.
-    public DateTime Fecha_Actividad { get; set; }
+    public DateOnly Fecha_Actividad { get; set; }
 
     public string Tipo { get; set; } = string.Empty;
 

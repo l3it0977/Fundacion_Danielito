@@ -4,7 +4,7 @@ namespace SISTEMADANIELITO.DTOS;
 public class RegistrarAsistenciasDTO
 {
     public int ActividadId { get; set; }
-    public DateTime Fecha { get; set; }
+    public DateOnly Fecha { get; set; }
     public List<AsistenciaItemDTO> Asistencias { get; set; } = [];
 }
 

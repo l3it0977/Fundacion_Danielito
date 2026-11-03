@@ -81,7 +81,7 @@ public sealed class BaseDeDatos : IDisposable
         return nino;
     }
 
-    public Actividad CrearActividad(Perfil creador, DateTime fecha, params Nino[] participantes)
+    public Actividad CrearActividad(Perfil creador, DateOnly fecha, params Nino[] participantes)
     {
         var actividad = new Actividad
         {
@@ -97,7 +97,7 @@ public sealed class BaseDeDatos : IDisposable
         return actividad;
     }
 
-    public Asistencia CrearAsistencia(Actividad actividad, Nino nino, DateTime fecha, string estado, Perfil registradoPor)
+    public Asistencia CrearAsistencia(Actividad actividad, Nino nino, DateOnly fecha, string estado, Perfil registradoPor)
     {
         var asistencia = new Asistencia
         {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Baby, BookOpen, CheckCircle2, TriangleAlert, Users } from 'lucide-react';
 import { servicioPanel } from '../api/servicios';
+import { formatearFecha } from '../utilidades/fechas';
 import { TarjetaResumen } from '../componentes/comunes/TarjetaResumen';
 import { Panel } from '../componentes/comunes/Panel';
 import { Cargando, MensajeError, SinDatos } from '../componentes/comunes/Estados';
@@ -118,7 +119,7 @@ export function PanelGeneral() {
                     <span className="lista-simple__titulo">{actividad.nombre}</span>
                     <span className="lista-simple__secundario">
                       {actividad.fecha_Actividad
-                        ? new Date(actividad.fecha_Actividad).toLocaleDateString('es-BO')
+                        ? formatearFecha(actividad.fecha_Actividad)
                         : 'Sin fecha'}
                       {actividad.grupos.length > 0 && ` · ${actividad.grupos.join(', ')}`}
                     </span>

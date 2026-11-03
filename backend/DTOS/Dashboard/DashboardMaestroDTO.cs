@@ -23,7 +23,7 @@ public class CumpleanosDTO
 {
     public int NinoId { get; set; }
     public string Nombre_Completo { get; set; } = string.Empty;
-    public DateTime Fecha_Nacimiento { get; set; }
+    public DateOnly Fecha_Nacimiento { get; set; }
     public int Edad_Que_Cumple { get; set; }
     public int Dias_Restantes { get; set; }
 }

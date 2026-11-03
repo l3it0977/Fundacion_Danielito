@@ -5,7 +5,7 @@ public class CreateNinoDTO
     public string Codigo { get; set; } = string.Empty;
     public string Nombres { get; set; } = string.Empty;
     public string Apellidos { get; set; } = string.Empty;
-    public DateTime? Fecha_Nacimiento { get; set; }
+    public DateOnly? Fecha_Nacimiento { get; set; }
     public string? Contacto { get; set; }
     public string? Curso { get; set; }
     public string? Colegio { get; set; }

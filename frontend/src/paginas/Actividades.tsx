@@ -4,7 +4,7 @@ import { CalendarCheck, FileDown, Pencil, Plus, Trash2, UserPlus } from 'lucide-
 import { servicioActividades, servicioNinos, servicioReportes } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { usePermisosActividad } from '../hooks/usePermisosActividad';
-import { fechaLocalDeHoy, soloFecha } from '../utilidades/fechas';
+import { fechaLocalDeHoy, formatearFecha, soloFecha } from '../utilidades/fechas';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';
@@ -326,7 +326,7 @@ export function Actividades() {
                       </span>
                     </td>
                     <td data-etiqueta="Fecha">
-                      {new Date(actividad.fecha_Actividad).toLocaleDateString('es-BO')}
+                      {formatearFecha(actividad.fecha_Actividad)}
                     </td>
                     <td data-etiqueta="Tipo">
                       <Insignia

@@ -15,7 +15,20 @@ export function fechaLocalDeHoy(): string {
   return `${anio}-${mes}-${dia}`;
 }
 
-/** Quita la hora de una fecha que llega del backend ("2026-10-13T00:00:00"). */
+/** Quita la hora de una fecha que llega del backend ("2026-10-13" o "2026-10-13T00:00:00"). */
 export function soloFecha(fechaDelServidor: string): string {
   return fechaDelServidor.split('T')[0];
+}
+
+/**
+ * Muestra una fecha del servidor en formato local (13/10/2026).
+ *
+ * No se usa new Date("2026-10-13"): JavaScript lo interpreta como medianoche UTC, y en Bolivia
+ * (UTC-4) eso se vería como el 12. Las fechas del sistema son de calendario, sin hora ni zona,
+ * así que se arman con el año, mes y día tal cual llegan.
+ */
+export function formatearFecha(fechaDelServidor: string): string {
+  const [anio, mes, dia] = soloFecha(fechaDelServidor).split('-').map(Number);
+
+  return new Date(anio, mes - 1, dia).toLocaleDateString('es-BO');
 }

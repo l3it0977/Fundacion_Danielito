@@ -12,7 +12,7 @@ namespace SISTEMADANIELITO.Tests;
 /// </summary>
 public class PermisosDeMaestroTests : IDisposable
 {
-    private static readonly DateTime Fecha = new(2026, 10, 5);
+    private static readonly DateOnly Fecha = new(2026, 10, 5);
 
     private readonly BaseDeDatos _bd = new();
     private readonly ActividadService _actividades;
@@ -167,7 +167,7 @@ public class PermisosDeMaestroTests : IDisposable
     }
 
     private static RegistrarAsistenciasDTO NuevoRegistro(
-        Actividad actividad, DateTime fecha, params (Nino Nino, string Estado)[] items)
+        Actividad actividad, DateOnly fecha, params (Nino Nino, string Estado)[] items)
     {
         return new RegistrarAsistenciasDTO
         {

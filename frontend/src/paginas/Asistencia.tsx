@@ -4,7 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { servicioActividades, servicioAsistencias, servicioNinos } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { usePermisosActividad } from '../hooks/usePermisosActividad';
-import { fechaLocalDeHoy, soloFecha } from '../utilidades/fechas';
+import { fechaLocalDeHoy, formatearFecha, soloFecha } from '../utilidades/fechas';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';
@@ -365,7 +365,7 @@ export function Asistencia() {
                   return (
                     <tr key={fechaSesion}>
                       <td data-etiqueta="Fecha">
-                        {new Date(`${fechaSesion}T00:00:00`).toLocaleDateString('es-BO')}
+                        {formatearFecha(fechaSesion)}
                       </td>
                       <td data-etiqueta="Presentes">{presentes}</td>
                       <td data-etiqueta="Ausentes">{ausentes}</td>
@@ -420,7 +420,7 @@ export function ElegirActividadParaAsistencia() {
                   <span className="fila-asistencia__nombre">{actividad.nombre}</span>
                   <span className="fila-asistencia__codigo">
                     {actividad.fecha_Actividad
-                      ? new Date(actividad.fecha_Actividad).toLocaleDateString('es-BO')
+                      ? formatearFecha(actividad.fecha_Actividad)
                       : 'Sin fecha'}{' '}
                     · {actividad.ninos.length} participantes
                   </span>

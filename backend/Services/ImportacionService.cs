@@ -101,7 +101,7 @@ public class ImportacionService : IImportacionService
                 continue;
             }
 
-            DateTime? fechaNacimiento = LeerFecha(fila, columnas, ColumnaFechaNacimiento);
+            DateOnly? fechaNacimiento = LeerFecha(fila, columnas, ColumnaFechaNacimiento);
 
             ninosParaGuardar.Add(new Nino
             {
@@ -246,7 +246,7 @@ public class ImportacionService : IImportacionService
     /// Lee una fecha que puede venir como fecha real de Excel o como texto.
     /// Si no se puede interpretar devuelve null, en lugar de inventar la fecha de hoy.
     /// </summary>
-    private static DateTime? LeerFecha(IXLRow fila, Dictionary<string, int> columnas, string nombreColumna)
+    private static DateOnly? LeerFecha(IXLRow fila, Dictionary<string, int> columnas, string nombreColumna)
     {
         if (!columnas.TryGetValue(nombreColumna, out int numeroColumna))
         {
@@ -262,12 +262,12 @@ public class ImportacionService : IImportacionService
 
         if (celda.DataType == XLDataType.DateTime && celda.TryGetValue(out DateTime fechaExcel))
         {
-            return fechaExcel.Date;
+            return DateOnly.FromDateTime(fechaExcel);
         }
 
         if (DateTime.TryParse(celda.GetString(), out DateTime fechaTexto))
         {
-            return fechaTexto.Date;
+            return DateOnly.FromDateTime(fechaTexto);
         }
 
         return null;

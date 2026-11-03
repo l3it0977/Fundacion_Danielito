@@ -10,9 +10,6 @@ using SISTEMADANIELITO.Mapper;
 using SISTEMADANIELITO.Middleware;
 using SISTEMADANIELITO.Services;
 
-//Para corregir DateTime con Npgsql
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();

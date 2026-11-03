@@ -6,7 +6,7 @@ public class NinoDTO
     public string Codigo { get; set; } = string.Empty;
     public string Nombres { get; set; } = string.Empty;
     public string Apellidos { get; set; } = string.Empty;
-    public DateTime? Fecha_Nacimiento { get; set; }
+    public DateOnly? Fecha_Nacimiento { get; set; }
     public string? Contacto { get; set; }
     public string? Curso { get; set; }
     public string? Colegio { get; set; }
@@ -39,8 +39,8 @@ public class NinoDTO
                 return null;
             }
 
-            DateTime hoy = DateTime.Today;
-            DateTime nacimiento = Fecha_Nacimiento.Value.Date;
+            DateOnly hoy = DateOnly.FromDateTime(DateTime.Today);
+            DateOnly nacimiento = Fecha_Nacimiento.Value;
 
             int edad = hoy.Year - nacimiento.Year;
             if (nacimiento > hoy.AddYears(-edad))

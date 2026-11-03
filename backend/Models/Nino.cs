@@ -20,7 +20,7 @@ public class Nino
     public string Apellidos { get; set; } = string.Empty;
 
     // La edad no se guarda: se calcula desde esta fecha al exponer el DTO.
-    public DateTime? Fecha_Nacimiento { get; set; }
+    public DateOnly? Fecha_Nacimiento { get; set; }
 
     [StringLength(255)]
     public string? Contacto { get; set; }

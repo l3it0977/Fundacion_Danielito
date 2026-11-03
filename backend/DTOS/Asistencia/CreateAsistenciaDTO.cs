@@ -4,7 +4,7 @@ public class CreateAsistenciaDTO
 {
     public int ActividadId { get; set; }
     public int NinoId { get; set; }
-    public DateTime Fecha { get; set; }
+    public DateOnly Fecha { get; set; }
     public string Estado { get; set; } = string.Empty;
     public string? Motivo_Justificacion { get; set; }
     public string? Observacion { get; set; }

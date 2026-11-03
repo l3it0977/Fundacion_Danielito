@@ -66,9 +66,9 @@ public class ReporteServiceTests : IDisposable
     {
         var ninoUno = _bd.CrearNino(_grupo, "N-1");
         var ninoDos = _bd.CrearNino(_grupo, "N-2");
-        var actividad = _bd.CrearActividad(_maestro, new DateTime(2026, 10, 1), ninoUno, ninoDos);
-        _bd.CrearAsistencia(actividad, ninoUno, new DateTime(2026, 10, 1), Asistencia.EstadoPresente, _maestro);
-        _bd.CrearAsistencia(actividad, ninoDos, new DateTime(2026, 10, 1), Asistencia.EstadoAusente, _maestro);
+        var actividad = _bd.CrearActividad(_maestro, new DateOnly(2026, 10, 1), ninoUno, ninoDos);
+        _bd.CrearAsistencia(actividad, ninoUno, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, _maestro);
+        _bd.CrearAsistencia(actividad, ninoDos, new DateOnly(2026, 10, 1), Asistencia.EstadoAusente, _maestro);
 
         byte[] pdf = _servicio.GenerarAsistencia(grupoId, mes, 2026);
 
@@ -103,7 +103,7 @@ public class ReporteServiceTests : IDisposable
     public void GenerarActividades_DevuelveUnPdf(int? grupoId, int? mes)
     {
         var nino = _bd.CrearNino(_grupo, "N-1");
-        _bd.CrearActividad(_maestro, new DateTime(2026, 10, 12), nino);
+        _bd.CrearActividad(_maestro, new DateOnly(2026, 10, 12), nino);
 
         AssertEsPdf(_servicio.GenerarActividades(grupoId, mes, 2026));
     }
@@ -119,7 +119,7 @@ public class ReporteServiceTests : IDisposable
     {
         var otro = _bd.CrearPerfil("Otro");
         var nino = _bd.CrearNino(_grupo, "N-1");
-        var actividad = _bd.CrearActividad(_maestro, new DateTime(2026, 10, 1), nino);
+        var actividad = _bd.CrearActividad(_maestro, new DateOnly(2026, 10, 1), nino);
 
         Assert.Throws<UnauthorizedAccessException>(() =>
             _servicio.GenerarAsistenciaPorActividad(actividad.Id, otro.Id));

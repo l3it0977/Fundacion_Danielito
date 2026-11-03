@@ -39,7 +39,7 @@ public class ActividadResumenDTO
 {
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
-    public DateTime? Fecha_Actividad { get; set; }
+    public DateOnly? Fecha_Actividad { get; set; }
     public string Tipo { get; set; } = string.Empty;
     public List<string> Grupos { get; set; } = [];
 }

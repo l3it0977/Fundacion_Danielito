@@ -3,7 +3,7 @@ namespace SISTEMADANIELITO.DTOS;
 public class VisitaDTO
 {
     public int Id { get; set; }
-    public DateTime Fecha_Visita { get; set; }
+    public DateOnly Fecha_Visita { get; set; }
     public string? Motivo { get; set; }
     public string? Observacion { get; set; }
     public string? Seguimiento { get; set; }

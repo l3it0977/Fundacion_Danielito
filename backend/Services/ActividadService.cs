@@ -28,7 +28,7 @@ public class ActividadService : IActividadService
         Actividad actividadModel = _mapper.Map<Actividad>(actividad);
         actividadModel.CreadoPorId = creadoPorId;
         actividadModel.Activa = true;
-        actividadModel.Fecha_Actividad = actividad.Fecha_Actividad.Date;
+        actividadModel.Fecha_Actividad = actividad.Fecha_Actividad;
 
         // Los participantes se eligen uno a uno, sin importar a qué grupo pertenezcan.
         actividadModel.Actividad_Ninos = ninosElegidos
@@ -61,7 +61,7 @@ public class ActividadService : IActividadService
 
         bdActividad.Nombre = actividad.Nombre;
         bdActividad.Descripcion = actividad.Descripcion;
-        bdActividad.Fecha_Actividad = actividad.Fecha_Actividad.Date;
+        bdActividad.Fecha_Actividad = actividad.Fecha_Actividad;
         bdActividad.Tipo = actividad.Tipo;
         bdActividad.Activa = actividad.Activa;
 
@@ -238,9 +238,7 @@ public class ActividadService : IActividadService
             return;
         }
 
-        // La fecha se normaliza sin hora: el índice único la incluye, y sin esto
-        // se crearían registros que la base considera distintos pero son del mismo día.
-        DateTime fechaDeLaLista = actividad.Fecha_Actividad.Date;
+        DateOnly fechaDeLaLista = actividad.Fecha_Actividad;
 
         // Puede haber asistencia previa si al niño se le quitó y se le volvió a agregar.
         List<int> yaTienenRegistro = _context.Asistencias
