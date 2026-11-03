@@ -1,0 +1,106 @@
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+
+  /* Alto mínimo cómodo para pulsar con el dedo en pantalla táctil. */
+  min-height: var(--area-toque);
+  padding: var(--espacio-3) var(--espacio-5);
+
+  border: none;
+  border-radius: var(--radio-chico);
+
+  font-family: var(--fuente);
+  font-size: var(--texto-md);
+  font-weight: 700;
+  color: var(--blanco);
+
+  transition: background-color var(--transicion), transform var(--transicion),
+    filter var(--transicion);
+}
+
+.boton:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.boton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Variantes ---------- */
+
+.boton--primario {
+  background: var(--teal-medio);
+}
+
+.boton--naranja {
+  background: var(--naranja);
+}
+
+.boton--secundario {
+  background: var(--teal-claro);
+}
+
+.boton--peligro {
+  background: var(--peligro);
+}
+
+.boton--contorno {
+  background: transparent;
+  color: var(--teal-medio);
+  border: 2px solid var(--teal-medio);
+}
+
+.boton--contorno:hover:not(:disabled) {
+  background: var(--teal-medio);
+  color: var(--blanco);
+}
+
+/* ---------- Tamaños ---------- */
+
+.boton--chico {
+  min-height: 36px;
+  padding: var(--espacio-2) var(--espacio-3);
+  font-size: var(--texto-sm);
+  border-radius: var(--radio-mini);
+}
+
+.boton--ancho-completo {
+  width: 100%;
+}
+
+/* ---------- Indicador de espera ---------- */
+
+.boton__girador {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: var(--blanco);
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+.boton--contorno .boton__girador {
+  border-color: rgba(49, 112, 110, 0.3);
+  border-top-color: var(--teal-medio);
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* En móvil los botones ocupan todo el ancho: son más fáciles de acertar. */
+@media (max-width: 480px) {
+  .boton:not(.boton--chico) {
+    width: 100%;
+  }
+}

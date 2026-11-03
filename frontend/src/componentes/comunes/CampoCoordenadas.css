@@ -1,0 +1,42 @@
+.campo-coordenadas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  margin-bottom: var(--espacio-4);
+}
+
+.campo-coordenadas__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.campo-coordenadas__entrada {
+  flex: 1;
+  min-width: 0;
+}
+
+/* El icono queda dentro del campo, a la izquierda del texto. */
+.campo-coordenadas__icono {
+  position: absolute;
+  left: var(--espacio-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-medio);
+  pointer-events: none;
+}
+
+.campo-coordenadas__control {
+  /* Espacio a la izquierda para que el texto no quede bajo el icono. */
+  padding-left: calc(var(--espacio-3) * 2 + 18px);
+  padding-right: var(--espacio-4);
+  /* Los números se leen mejor alineados en ancho fijo. */
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .campo-coordenadas__fila {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

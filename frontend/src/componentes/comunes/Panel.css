@@ -1,0 +1,51 @@
+.panel {
+  background: var(--blanco);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+}
+
+.panel__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-5) var(--espacio-6);
+  border-bottom: 1px solid var(--borde);
+}
+
+.panel__titulo {
+  font-size: var(--texto-lg);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.panel__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.panel__contenido {
+  padding: var(--espacio-5) var(--espacio-6);
+}
+
+/* El contenido pegado a los bordes cuando lleva una tabla, que trae su propio espaciado. */
+.panel__contenido:has(> .tabla-contenedor) {
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .panel__encabezado,
+  .panel__contenido {
+    padding: var(--espacio-4);
+  }
+
+  /* En pantallas chicas las acciones pasan debajo del título y ocupan el ancho. */
+  .panel__acciones {
+    width: 100%;
+  }
+}

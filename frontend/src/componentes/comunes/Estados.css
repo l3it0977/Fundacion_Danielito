@@ -1,0 +1,39 @@
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-10) var(--espacio-5);
+  text-align: center;
+  color: var(--texto-medio);
+}
+
+.estado__texto {
+  font-size: var(--texto-base);
+  max-width: 42ch;
+}
+
+.estado__girador {
+  color: var(--teal-medio);
+  animation: girar-estado 0.9s linear infinite;
+}
+
+.estado__icono-vacio {
+  color: var(--teal-palido);
+}
+
+.estado--error {
+  color: var(--error-texto);
+  background: var(--error-fondo);
+  border: 1px solid var(--error-borde);
+  border-radius: var(--radio-chico);
+  padding: var(--espacio-5);
+}
+
+@keyframes girar-estado {
+  to {
+    transform: rotate(360deg);
+  }
+}

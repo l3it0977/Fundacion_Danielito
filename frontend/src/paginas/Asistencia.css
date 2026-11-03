@@ -1,0 +1,119 @@
+.lista-asistencia {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila-asistencia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-4) 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.fila-asistencia:last-child {
+  border-bottom: none;
+}
+
+.fila-asistencia__nino {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.fila-asistencia__nombre {
+  font-weight: 700;
+  color: var(--texto-oscuro);
+}
+
+.fila-asistencia__codigo {
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* El motivo ocupa su propia línea, debajo del nombre y los botones. */
+.fila-asistencia__motivo {
+  flex-basis: 100%;
+}
+
+/* ---------- Botones de estado ---------- */
+
+.grupo-estados {
+  display: flex;
+  gap: var(--espacio-2);
+  flex-wrap: wrap;
+}
+
+.boton-estado {
+  min-height: var(--area-toque);
+  padding: var(--espacio-2) var(--espacio-4);
+
+  background: var(--blanco);
+  color: var(--texto-medio);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-chico);
+
+  font-family: var(--fuente);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+
+  transition: background-color var(--transicion), border-color var(--transicion),
+    color var(--transicion);
+}
+
+.boton-estado:hover {
+  border-color: var(--texto-medio);
+}
+
+/*
+  El estado elegido se distingue por color de fondo y por borde grueso.
+  Depender solo del color dejaría fuera a quien no diferencia tonos.
+*/
+.boton-estado--activo {
+  color: var(--blanco);
+}
+
+.boton-estado--presente.boton-estado--activo {
+  background: var(--exito);
+  border-color: var(--exito);
+}
+
+.boton-estado--ausente.boton-estado--activo {
+  background: var(--error);
+  border-color: var(--error);
+}
+
+.boton-estado--justificado.boton-estado--activo {
+  background: var(--advertencia);
+  border-color: var(--advertencia);
+}
+
+@media (max-width: 600px) {
+  .fila-asistencia {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Los tres estados se reparten el ancho para acertar con el dedo. */
+  .grupo-estados {
+    width: 100%;
+  }
+
+  .boton-estado {
+    flex: 1;
+    padding: var(--espacio-2);
+  }
+}
+
+/* Texto para sesiones de las que todavía nadie pasó lista. */
+.texto-pendiente {
+  font-size: var(--texto-sm);
+  font-style: italic;
+  color: var(--texto-medio);
+}

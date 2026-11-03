@@ -1,0 +1,236 @@
+.panel-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+.panel-pagina__titulo {
+  font-size: var(--texto-xl);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.panel-pagina__descripcion {
+  margin-top: var(--espacio-1);
+  color: var(--texto-medio);
+}
+
+/*
+  Rejilla que se acomoda sola: las tarjetas se reparten el ancho disponible y
+  bajan de fila cuando ya no caben, sin necesitar un punto de quiebre por tamaño.
+*/
+.rejilla-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--espacio-4);
+}
+
+.rejilla-paneles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--espacio-5);
+}
+
+.rejilla-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--espacio-3);
+}
+
+.mini-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-1);
+
+  padding: var(--espacio-4);
+  background: var(--fondo-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-medio);
+  text-align: center;
+}
+
+.mini-cifra__valor {
+  font-size: var(--texto-xl);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.mini-cifra__etiqueta {
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--texto-medio);
+}
+
+.mini-cifra--exito .mini-cifra__valor {
+  color: var(--exito);
+}
+
+.mini-cifra--error .mini-cifra__valor {
+  color: var(--error);
+}
+
+.mini-cifra--advertencia .mini-cifra__valor {
+  color: var(--advertencia);
+}
+
+/* ---------- Listas ---------- */
+
+.lista-simple {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-simple__elemento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-3) 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.lista-simple__elemento:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.lista-simple__principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+.lista-simple__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-weight: 700;
+  color: var(--texto-oscuro);
+}
+
+.lista-simple__icono {
+  flex-shrink: 0;
+  color: var(--naranja);
+}
+
+.lista-simple__icono--trofeo {
+  color: var(--naranja-claro);
+}
+
+.lista-simple__secundario {
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+.destacado-dias {
+  flex-shrink: 0;
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  color: var(--teal-medio);
+  white-space: nowrap;
+}
+
+/* ---------- Tablas ---------- */
+
+.tabla-contenedor {
+  /* Permite desplazar la tabla a lo ancho sin romper el resto de la página. */
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-base);
+}
+
+.tabla th {
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--teal-oscuro);
+  color: var(--blanco);
+
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr {
+  transition: background-color var(--transicion);
+}
+
+.tabla tbody tr:hover {
+  background: var(--fondo-suave);
+}
+
+/*
+  En móvil la tabla se reorganiza como fichas: cada fila pasa a ser un bloque y
+  cada celda muestra su encabezado al costado. Así se evita el desplazamiento
+  horizontal, que en pantallas chicas es incómodo de usar.
+*/
+@media (max-width: 680px) {
+  .tabla thead {
+    /* Oculto visualmente pero disponible para lectores de pantalla. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tabla,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla tr {
+    margin-bottom: var(--espacio-3);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+    overflow: hidden;
+  }
+
+  .tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-4);
+    text-align: right;
+  }
+
+  /* El nombre de la columna se toma del atributo data-etiqueta de cada celda. */
+  .tabla td::before {
+    content: attr(data-etiqueta);
+    font-size: var(--texto-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--texto-medio);
+    text-align: left;
+  }
+}
+
+.panel-pagina__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}

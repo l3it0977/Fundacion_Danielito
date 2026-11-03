@@ -1,25 +1,31 @@
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
+# ---------- Backend (.NET) ----------
+/backend/bin
+/backend/obj
+# La configuración local va en user-secrets, fuera del repositorio.
+/backend/appsettings.*.local.json
+
+# ---------- Frontend (React) ----------
+/frontend/node_modules
+/frontend/dist
+/frontend/.vite
+# Contiene la dirección de la API de cada entorno.
+/frontend/.env.local
+
+# ---------- Herramientas de Claude Code (locales de cada máquina) ----------
+/.claude
+/.agents
+/skills-lock.json
+
+# ---------- Editores ----------
 /.idea
-/.nova
-/.phpunit.cache
 /.vscode
+/.fleet
+/.nova
 /.zed
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
-_ide_helper.php
-Homestead.json
-Homestead.yaml
+
+# ---------- Sistema operativo ----------
+.DS_Store
 Thumbs.db
+
+# ---------- Registros ----------
+*.log

@@ -1,0 +1,319 @@
+/* Estilos compartidos por las pantallas de listado y formulario. */
+
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+}
+
+/* Texto secundario bajo el dato principal de una celda. */
+.tabla__secundario {
+  display: block;
+  margin-top: var(--espacio-1);
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+.tabla__con-icono {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--texto-medio);
+}
+
+.tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+/* ---------- Barra de filtros ---------- */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-4);
+}
+
+.filtros__campo {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ---------- Agrupación por secciones plegables ---------- */
+
+.grupo-plegable {
+  background: var(--blanco);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+}
+
+.grupo-plegable + .grupo-plegable {
+  margin-top: var(--espacio-4);
+}
+
+.grupo-plegable__resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-4) var(--espacio-6);
+  border-top: 4px solid var(--naranja);
+
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--transicion);
+}
+
+/* Oculta el triángulo que el navegador pone por defecto. */
+.grupo-plegable__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.grupo-plegable__resumen:hover {
+  background: var(--fondo-suave);
+}
+
+.grupo-plegable__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+
+  font-size: var(--texto-lg);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.grupo-plegable__flecha {
+  color: var(--texto-medio);
+  transition: transform var(--transicion);
+}
+
+/* La flecha gira cuando la sección se abre. */
+.grupo-plegable[open] .grupo-plegable__flecha {
+  transform: rotate(180deg);
+}
+
+/* ---------- Ficha de detalle ---------- */
+
+.detalle-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--espacio-5);
+}
+
+.detalle-dato {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}
+
+.detalle-dato__etiqueta {
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--texto-medio);
+}
+
+.detalle-dato__valor {
+  font-size: var(--texto-base);
+  color: var(--texto-oscuro);
+}
+
+/* ---------- Selección de niños para una actividad ---------- */
+
+.rejilla-seleccion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--espacio-3);
+}
+
+.ficha-seleccion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-3) var(--espacio-4);
+
+  background: var(--fondo-suave);
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-medio);
+
+  cursor: pointer;
+  transition: border-color var(--transicion), background-color var(--transicion);
+}
+
+.ficha-seleccion:hover {
+  border-color: var(--naranja);
+}
+
+/* Estado marcado: además del color hay un borde grueso, para no depender solo del tono. */
+.ficha-seleccion--marcada {
+  background: var(--blanco);
+  border-color: var(--teal-medio);
+}
+
+.ficha-seleccion__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ficha-seleccion__nombre {
+  font-weight: 700;
+  color: var(--texto-oscuro);
+}
+
+.ficha-seleccion__detalle {
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* ---------- Mapa de ubicación ---------- */
+
+.mapa-contenedor {
+  height: 320px;
+  border-radius: var(--radio-medio);
+  overflow: hidden;
+  border: 1px solid var(--borde);
+}
+
+/* Leaflet necesita alto explícito en su contenedor. */
+.mapa-contenedor .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .grupo-plegable__resumen {
+    padding: var(--espacio-4);
+  }
+
+  .mapa-contenedor {
+    height: 260px;
+  }
+}
+
+/* ---------- Enlaces con apariencia de botón ----------
+   Se usa <a> en vez de <button> cuando la acción es navegar: así funciona
+   abrir en pestaña nueva y el lector de pantalla lo anuncia como enlace. */
+
+.enlace-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+
+  min-height: 36px;
+  padding: var(--espacio-2) var(--espacio-3);
+
+  background: var(--teal-medio);
+  color: var(--blanco);
+  border-radius: var(--radio-mini);
+
+  font-size: var(--texto-sm);
+  font-weight: 700;
+
+  transition: filter var(--transicion), transform var(--transicion);
+}
+
+.enlace-boton:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.enlace-boton--naranja {
+  background: var(--naranja);
+}
+
+.enlace-boton--contorno {
+  background: transparent;
+  color: var(--teal-medio);
+  border: 2px solid var(--teal-medio);
+}
+
+.enlace-boton--contorno:hover {
+  background: var(--teal-medio);
+  color: var(--blanco);
+}
+
+/* Tamaño equivalente al de un botón normal, para los encabezados de página. */
+.enlace-boton--grande {
+  min-height: var(--area-toque);
+  padding: var(--espacio-3) var(--espacio-5);
+  border-radius: var(--radio-chico);
+  font-size: var(--texto-md);
+}
+
+.filtros__resultado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+
+  padding-bottom: var(--espacio-3);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--texto-medio);
+}
+
+@media (max-width: 600px) {
+  .enlace-boton--grande {
+    width: 100%;
+  }
+}
+
+/* Separa bloques de un formulario largo dividido en varios paneles. */
+.separador {
+  height: var(--espacio-5);
+}
+
+/* Texto explicativo dentro de un panel, antes del contenido. */
+.texto-ayuda {
+  margin-bottom: var(--espacio-4);
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* El texto del encabezado se encoge antes que los botones al faltar espacio. */
+.encabezado-pagina__texto {
+  min-width: 0;
+  flex: 1;
+}
+
+/* ---------- Bloque de maestros a cargo de un grupo ---------- */
+
+.bloque-maestros {
+  margin: var(--espacio-5) 0 0;
+  padding: var(--espacio-5);
+
+  background: var(--fondo-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-medio);
+}
+
+.bloque-maestros__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+
+  padding: 0 var(--espacio-2);
+  margin-bottom: var(--espacio-3);
+
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--teal-medio);
+}
+
+.bloque-maestros__conteo {
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--texto-medio);
+}

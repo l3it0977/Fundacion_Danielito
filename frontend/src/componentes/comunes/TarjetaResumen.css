@@ -1,0 +1,87 @@
+.tarjeta-resumen {
+  position: relative;
+  overflow: hidden;
+
+  padding: var(--espacio-5) var(--espacio-6);
+  background: var(--blanco);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra);
+
+  transition: transform var(--transicion), box-shadow var(--transicion);
+}
+
+/* Franja de color en el borde superior, característica del diseño original. */
+.tarjeta-resumen::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--teal-medio);
+}
+
+.tarjeta-resumen--naranja::before {
+  background: var(--naranja);
+}
+
+.tarjeta-resumen--claro::before {
+  background: var(--teal-claro);
+}
+
+.tarjeta-resumen--alerta::before {
+  background: var(--advertencia);
+}
+
+.tarjeta-resumen:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-elevada);
+}
+
+.tarjeta-resumen__encabezado {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-bottom: var(--espacio-3);
+}
+
+.tarjeta-resumen__icono {
+  flex-shrink: 0;
+  color: var(--teal-medio);
+}
+
+.tarjeta-resumen--naranja .tarjeta-resumen__icono {
+  color: var(--naranja);
+}
+
+.tarjeta-resumen--claro .tarjeta-resumen__icono {
+  color: var(--teal-claro);
+}
+
+.tarjeta-resumen--alerta .tarjeta-resumen__icono {
+  color: var(--advertencia);
+}
+
+.tarjeta-resumen__titulo {
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--texto-medio);
+}
+
+/*
+  El diseño original mostraba el número al mismo tamaño que su título, así que
+  no se distinguía de un vistazo. Aquí el número domina la tarjeta, que es lo
+  que se viene a leer.
+*/
+.tarjeta-resumen__valor {
+  font-size: var(--texto-2xl);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--teal-oscuro);
+}
+
+.tarjeta-resumen__detalle {
+  margin-top: var(--espacio-2);
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}

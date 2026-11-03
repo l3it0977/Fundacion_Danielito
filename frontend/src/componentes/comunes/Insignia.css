@@ -1,0 +1,42 @@
+.insignia {
+  display: inline-flex;
+  align-items: center;
+
+  padding: var(--espacio-1) var(--espacio-3);
+  border-radius: var(--radio-pildora);
+
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--blanco);
+}
+
+.insignia--teal {
+  background: var(--teal-medio);
+}
+
+.insignia--naranja {
+  background: var(--naranja);
+}
+
+.insignia--exito {
+  background: var(--exito);
+}
+
+.insignia--error {
+  background: var(--error);
+}
+
+.insignia--advertencia {
+  background: var(--advertencia);
+}
+
+.insignia--intervencion {
+  background: var(--intervencion);
+}
+
+.insignia--neutro {
+  background: var(--fondo);
+  color: var(--texto-medio);
+  border: 1px solid var(--borde);
+}

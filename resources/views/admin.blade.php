@@ -1,1 +1,0 @@
-@include('dashboard_admin')

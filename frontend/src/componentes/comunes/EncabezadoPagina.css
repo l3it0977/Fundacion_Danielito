@@ -1,0 +1,31 @@
+.encabezado-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.encabezado-pagina__titulo {
+  font-size: var(--texto-xl);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.encabezado-pagina__descripcion {
+  margin-top: var(--espacio-1);
+  color: var(--texto-medio);
+}
+
+.encabezado-pagina__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+@media (max-width: 600px) {
+  /* En móvil las acciones pasan debajo y ocupan el ancho completo. */
+  .encabezado-pagina__acciones {
+    width: 100%;
+  }
+}

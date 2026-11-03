@@ -1,58 +1,99 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema Danielito
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de seguimiento de niños, grupos, actividades y asistencia de la Fundación Danielito
+(Warnes, Santa Cruz).
 
-## About Laravel
+## Estructura
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Carpeta | Contenido |
+|---|---|
+| `backend/` | API REST en ASP.NET Core 10, con Entity Framework Core, Identity y JWT |
+| `frontend/` | Interfaz web en React 19 con TypeScript y Vite |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- .NET SDK 10
+- Node.js 20 o superior
+- PostgreSQL 15 o superior
 
-## Learning Laravel
+## Puesta en marcha
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Backend
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+La cadena de conexión y las claves no se guardan en el repositorio: van en user-secrets.
 
 ```bash
-composer require laravel/boost --dev
+cd backend
 
-php artisan boost:install
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=sistema_danielito;Username=postgres;Password=TU_CONTRASEÑA"
+
+# Clave con la que se firman los tokens. Debe tener al menos 32 caracteres.
+dotnet user-secrets set "Jwt:SecretKey" "UNA_CLAVE_LARGA_Y_ALEATORIA"
+
+# Contraseña inicial de los usuarios que crea el seeder al arrancar.
+# Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.
+dotnet user-secrets set "Seed:PasswordInicial" "UnaClave.Seguraa1"
+
+# Crea las tablas. Cada contexto se migra por separado.
+dotnet ef database update --context AppIdentityContext
+dotnet ef database update --context AppProyectoContext
+
+dotnet run
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+La API queda en `http://localhost:5002`.
 
-## Contributing
+Al arrancar por primera vez se crean los tres roles (Directora, Administrador, Maestro),
+los usuarios iniciales y los grupos con su maestro a cargo.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Frontend
 
-## Code of Conduct
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+La interfaz queda en `http://localhost:5173`.
 
-## Security Vulnerabilities
+La dirección de la API se configura en `frontend/.env` mediante `VITE_API_URL`. Ese mismo
+origen debe estar autorizado en `Cors:OrigenesPermitidos` dentro de `backend/appsettings.json`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Migrar a Supabase
 
-## License
+Supabase expone PostgreSQL estándar, así que basta con cambiar la cadena de conexión:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+cd backend
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=HOST.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.REFERENCIA;Password=TU_CONTRASEÑA;SSL Mode=Require;Trust Server Certificate=true"
+```
+
+Después se aplican las migraciones contra la nueva base. No hay que tocar código.
+
+## Arquitectura del backend
+
+Está organizado en capas: el controlador recibe la petición y delega en un servicio, que
+concentra la lógica y el acceso a datos a través de Entity Framework.
+
+```
+Controllers/   Reciben y responden, sin lógica de negocio
+Interfaces/    Un contrato por servicio
+Services/      Lógica y acceso a datos
+Models/        Entidades de la base
+DTOS/          Lo que entra y sale por la API; las entidades nunca se exponen
+Data/          AppProyectoContext (dominio) y AppIdentityContext (seguridad)
+Mapper/        Conversión entre entidades y DTOs con AutoMapper
+Middleware/    Traduce las excepciones al código HTTP correspondiente
+```
+
+Seguridad y dominio usan contextos separados, cada uno con su propia tabla de historial
+de migraciones, sobre la misma base de datos.
+
+## Roles
+
+- **Directora** y **Administrador**: acceso completo, incluida la gestión de usuarios.
+- **Maestro**: ve solo los niños y actividades de los grupos que tiene a cargo.
+
+Los usuarios no se eliminan, se desactivan, para conservar el registro de quién anotó
+cada asistencia. Ten en cuenta que al desactivar a alguien su sesión sigue siendo válida
+hasta que expire el token, que dura 2 horas.

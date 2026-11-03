@@ -1,0 +1,97 @@
+.pasos {
+  margin: 0 0 var(--espacio-5);
+  padding-left: var(--espacio-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.pasos__item {
+  color: var(--texto-medio);
+}
+
+/* ---------- Zona para elegir archivo ---------- */
+
+.zona-archivo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-2);
+
+  padding: var(--espacio-8) var(--espacio-5);
+
+  background: var(--fondo-suave);
+  border: 2px dashed var(--borde-campo);
+  border-radius: var(--radio-medio);
+
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--transicion), background-color var(--transicion);
+}
+
+.zona-archivo:hover {
+  border-color: var(--naranja);
+  background: var(--blanco);
+}
+
+/* El contorno aparece al llegar con el teclado, ya que el input real está oculto. */
+.zona-archivo:focus-within {
+  outline: 3px solid var(--naranja);
+  outline-offset: 2px;
+}
+
+.zona-archivo__icono {
+  color: var(--teal-medio);
+}
+
+.zona-archivo__titulo {
+  font-weight: 700;
+  color: var(--texto-oscuro);
+  word-break: break-all;
+}
+
+.zona-archivo__ayuda {
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* Se oculta el input nativo, que no se puede estilizar bien, pero sigue siendo funcional. */
+.zona-archivo__campo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* ---------- Errores por fila ---------- */
+
+.lista-errores {
+  margin-top: var(--espacio-5);
+  padding: var(--espacio-4);
+
+  background: var(--error-fondo);
+  border: 1px solid var(--error-borde);
+  border-radius: var(--radio-chico);
+}
+
+.lista-errores__titulo {
+  margin-bottom: var(--espacio-3);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--error-texto);
+}
+
+.lista-errores__lista {
+  margin: 0;
+  padding-left: var(--espacio-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.lista-errores__item {
+  color: var(--error-texto);
+  font-size: var(--texto-sm);
+}

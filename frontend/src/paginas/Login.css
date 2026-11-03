@@ -1,0 +1,312 @@
+/*
+  Pantalla partida en dos: la identidad de la fundación a la izquierda y el
+  formulario a la derecha. Ocupa el alto completo de la ventana.
+*/
+.login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- Lado izquierdo: la marca ---------- */
+
+.login__marca {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-8);
+
+  padding: var(--espacio-10) var(--espacio-8);
+  background: linear-gradient(135deg, var(--teal-oscuro), var(--teal-medio));
+  color: var(--blanco);
+  text-align: center;
+}
+
+/*
+  Los mismos anillos decorativos de la barra superior, para que el ingreso
+  y el resto del sistema se reconozcan como la misma aplicación.
+*/
+.login__marca::before,
+.login__marca::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login__marca::before {
+  width: 420px;
+  height: 420px;
+  border: 56px solid rgba(234, 128, 40, 0.16);
+  top: -140px;
+  left: -140px;
+}
+
+.login__marca::after {
+  width: 300px;
+  height: 300px;
+  border: 40px solid rgba(163, 211, 206, 0.14);
+  right: -110px;
+  bottom: -90px;
+}
+
+.login__marca-contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-5);
+  max-width: 420px;
+}
+
+.login__logo {
+  width: min(280px, 60%);
+  height: auto;
+  object-fit: contain;
+
+  /* Fondo claro tras el logo: se lee mejor sobre el degradado oscuro. */
+  padding: var(--espacio-5);
+  background: var(--blanco);
+  border-radius: var(--radio-grande);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.login__marca-titulo {
+  font-size: var(--texto-2xl);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.login__marca-titulo strong {
+  font-weight: 800;
+  color: var(--naranja-claro);
+}
+
+.login__marca-descripcion {
+  font-size: var(--texto-md);
+  color: var(--teal-palido);
+  max-width: 34ch;
+}
+
+.login__marca-pie {
+  position: relative;
+  z-index: 1;
+
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--teal-palido);
+}
+
+/* ---------- Lado derecho: el formulario ---------- */
+
+.login__acceso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espacio-10) var(--espacio-8);
+  background: var(--fondo);
+}
+
+.login__formulario-envoltorio {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login__formulario-encabezado {
+  margin-bottom: var(--espacio-8);
+}
+
+.login__formulario-titulo {
+  font-size: var(--texto-xl);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.login__formulario-descripcion {
+  margin-top: var(--espacio-2);
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+.login__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-5);
+}
+
+.login__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+
+  padding: var(--espacio-3) var(--espacio-4);
+
+  background: var(--error-fondo);
+  border: 1px solid var(--error-borde);
+  border-radius: var(--radio-chico);
+
+  font-size: var(--texto-sm);
+  color: var(--error-texto);
+}
+
+.login__error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.login__pie {
+  margin-top: var(--espacio-6);
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+  text-align: center;
+}
+
+/* ---------- Campos de formulario, reutilizables ---------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+/*
+  La etiqueta va siempre visible sobre el campo. Usar solo el texto de ejemplo
+  dentro del campo hace que se pierda apenas se empieza a escribir.
+*/
+.campo__etiqueta {
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  color: var(--texto-oscuro);
+}
+
+.campo__control {
+  width: 100%;
+  min-height: var(--area-toque);
+  padding: var(--espacio-3) var(--espacio-4);
+
+  background: var(--blanco);
+  border: 1px solid var(--borde-campo);
+  border-radius: var(--radio-chico);
+
+  font-family: var(--fuente);
+  font-size: var(--texto-base);
+  color: var(--texto-oscuro);
+
+  transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+
+.campo__control:focus {
+  outline: none;
+  border-color: var(--teal-medio);
+  box-shadow: var(--sombra-foco);
+}
+
+.campo__con-boton {
+  position: relative;
+}
+
+.campo__con-boton .campo__control {
+  padding-right: var(--area-toque);
+}
+
+.campo__boton-ojo {
+  position: absolute;
+  right: var(--espacio-1);
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+
+  background: transparent;
+  border: none;
+  border-radius: var(--radio-mini);
+  color: var(--texto-medio);
+}
+
+.campo__boton-ojo:hover {
+  color: var(--teal-medio);
+}
+
+/* ---------- Tableta: la marca se reduce ---------- */
+
+@media (max-width: 1024px) {
+  .login {
+    /* El formulario necesita menos ancho que el panel de marca. */
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .login__marca,
+  .login__acceso {
+    padding: var(--espacio-8) var(--espacio-5);
+  }
+
+  .login__marca-titulo {
+    font-size: var(--texto-xl);
+  }
+}
+
+/* ---------- Móvil: una sola columna ---------- */
+
+@media (max-width: 768px) {
+  .login {
+    grid-template-columns: 1fr;
+    /* La marca arriba se ajusta a su contenido; el formulario ocupa el resto. */
+    grid-template-rows: auto 1fr;
+  }
+
+  .login__marca {
+    gap: var(--espacio-4);
+    padding: var(--espacio-6) var(--espacio-5);
+  }
+
+  /* Los anillos decorativos no caben en una franja baja. */
+  .login__marca::before,
+  .login__marca::after {
+    display: none;
+  }
+
+  .login__logo {
+    width: 120px;
+    padding: var(--espacio-3);
+    border-radius: var(--radio-medio);
+  }
+
+  .login__marca-descripcion,
+  .login__marca-pie {
+    display: none;
+  }
+
+  .login__marca-titulo {
+    font-size: var(--texto-lg);
+  }
+
+  .login__acceso {
+    align-items: flex-start;
+    padding: var(--espacio-8) var(--espacio-5);
+  }
+
+  .login__formulario-envoltorio {
+    max-width: 440px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .login__logo {
+    width: 88px;
+  }
+
+  .login__acceso {
+    padding: var(--espacio-6) var(--espacio-4);
+  }
+}

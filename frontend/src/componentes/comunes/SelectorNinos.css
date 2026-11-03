@@ -1,0 +1,144 @@
+.selector-ninos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+
+/* Barra superior: buscador, conteo y limpiar. */
+.selector-ninos__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-4);
+}
+
+.selector-ninos__buscador {
+  flex: 1;
+  min-width: 220px;
+}
+
+.selector-ninos__conteo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+
+  padding-bottom: var(--espacio-3);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  color: var(--teal-medio);
+  white-space: nowrap;
+}
+
+.selector-ninos__aviso {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--fondo-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+
+  font-size: var(--texto-sm);
+  color: var(--texto-medio);
+}
+
+/* ---------- Grupo plegable dentro del selector ---------- */
+
+.grupo-seleccion {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-medio);
+  overflow: hidden;
+}
+
+.grupo-seleccion__resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--fondo-suave);
+
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--transicion);
+}
+
+.grupo-seleccion__resumen::-webkit-details-marker {
+  display: none;
+}
+
+.grupo-seleccion__resumen:hover {
+  background: var(--blanco);
+}
+
+.grupo-seleccion__titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+
+  font-size: var(--texto-base);
+  font-weight: 700;
+  color: var(--teal-oscuro);
+}
+
+.grupo-seleccion__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+/* Atajo para marcar el grupo entero, sin salir del encabezado. */
+.grupo-seleccion__marcar {
+  display: inline-flex;
+  align-items: center;
+
+  /* Alto cómodo para el dedo, sin agrandar la fila del grupo. */
+  min-height: 32px;
+  padding: var(--espacio-1) var(--espacio-3);
+
+  border: 1px solid var(--teal-medio);
+  border-radius: var(--radio-mini);
+
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  color: var(--teal-medio);
+  white-space: nowrap;
+
+  transition: background-color var(--transicion), color var(--transicion);
+}
+
+.grupo-seleccion__marcar:hover {
+  background: var(--teal-medio);
+  color: var(--blanco);
+}
+
+.grupo-seleccion__flecha {
+  color: var(--texto-medio);
+  transition: transform var(--transicion);
+}
+
+.grupo-seleccion[open] .grupo-seleccion__flecha {
+  transform: rotate(180deg);
+}
+
+/* La rejilla de fichas reutiliza los estilos de Listados.css. */
+.grupo-seleccion .rejilla-seleccion {
+  padding: var(--espacio-4);
+}
+
+@media (max-width: 600px) {
+  .selector-ninos__barra {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selector-ninos__conteo {
+    padding-bottom: 0;
+  }
+
+  .grupo-seleccion__resumen {
+    flex-wrap: wrap;
+  }
+}

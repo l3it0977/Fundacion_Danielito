@@ -1,0 +1,108 @@
+/*
+  Tokens de diseño del Sistema Danielito.
+  El teal y el naranja son los colores institucionales de la fundación: se usan
+  siempre a través de estas variables, nunca escritos directamente en un componente.
+*/
+
+:root {
+  /* ---------- Colores de marca ---------- */
+  --teal-oscuro: #1d4a4b;
+  --teal-medio: #31706e;
+  --teal-claro: #377f80;
+  --teal-palido: #a3d3ce;
+
+  --naranja: #ea8028;
+  --naranja-claro: #ffad43;
+  --naranja-palido: #f9c388;
+  --naranja-oscuro: #d96e17;
+
+  /* ---------- Superficies y texto ---------- */
+  --blanco: #ffffff;
+  --fondo: #f4f8f8;
+  --fondo-suave: #f8fbfb;
+  --texto-oscuro: #1a2e2e;
+  --texto-medio: #4a6363;
+  --borde: #e5eeee;
+  --borde-campo: #d7dddd;
+
+  /* ---------- Estados ---------- */
+  --exito: #4caf50;
+  --error: #f44336;
+  --advertencia: #ff9800;
+  --intervencion: #8e44ad;
+  --peligro: #d32f2f;
+
+  --error-fondo: #ffeaea;
+  --error-borde: #ffb0b0;
+  --error-texto: #c62828;
+
+  --exito-fondo: #eaf8ef;
+  --exito-texto: #1d6b3c;
+  --exito-borde: #3ca55c;
+
+  --vulnerable-fondo: #f7d8d8;
+  --vulnerable-texto: #8b1e1e;
+
+  /* ---------- Sombras ----------
+     Tintadas de teal, no gris neutro: es parte del carácter visual del sistema. */
+  --sombra: 0 4px 20px rgba(29, 74, 75, 0.12);
+  --sombra-elevada: 0 8px 28px rgba(29, 74, 75, 0.17);
+  --sombra-foco: 0 0 0 4px rgba(49, 112, 110, 0.15);
+
+  /* ---------- Bordes redondeados ---------- */
+  --radio-grande: 16px;
+  --radio-medio: 12px;
+  --radio-chico: 10px;
+  --radio-mini: 8px;
+  --radio-pildora: 999px;
+
+  /* ---------- Espaciado (escala densa, propia de un panel de gestión) ---------- */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 20px;
+  --espacio-6: 24px;
+  --espacio-8: 32px;
+  --espacio-10: 40px;
+
+  /* ---------- Tipografía ----------
+     Montserrat es la fuente del sistema actual. La escala se normalizó: el diseño
+     original repetía 15px en títulos, números y cuerpo, sin jerarquía real. */
+  --fuente: 'Montserrat', system-ui, -apple-system, sans-serif;
+
+  --texto-xs: 0.75rem;    /* 12px - etiquetas, píldoras */
+  --texto-sm: 0.8125rem;  /* 13px - texto auxiliar */
+  --texto-base: 0.9375rem;/* 15px - cuerpo */
+  --texto-md: 1.0625rem;  /* 17px - botones */
+  --texto-lg: 1.25rem;    /* 20px - títulos de panel */
+  --texto-xl: 1.5rem;     /* 24px - títulos de página */
+  --texto-2xl: 2rem;      /* 32px - números de las tarjetas de resumen */
+
+  /* ---------- Movimiento ---------- */
+  --transicion: 200ms ease;
+
+  /* ---------- Medidas de interfaz ---------- */
+  --alto-barra: 72px;
+  /* Mínimo recomendado para que un botón sea cómodo de pulsar en pantalla táctil. */
+  --area-toque: 44px;
+}
+
+/*
+  Quien active "reducir movimiento" en su sistema operativo deja de ver animaciones.
+  Es un ajuste de accesibilidad: hay personas a las que el movimiento les provoca mareo.
+*/
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transicion: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
