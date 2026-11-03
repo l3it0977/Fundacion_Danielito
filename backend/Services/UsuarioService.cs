@@ -26,19 +26,22 @@ public class UsuarioService : IUsuarioService
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IMemoryCache _cache;
+    private readonly IBitacoraService _bitacora;
 
     public UsuarioService(
         AppProyectoContext context,
         AppIdentityContext contextIdentity,
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IBitacoraService bitacora)
     {
         _context = context;
         _contextIdentity = contextIdentity;
         _userManager = userManager;
         _roleManager = roleManager;
         _cache = cache;
+        _bitacora = bitacora;
     }
 
     //OBTENER TODOS
@@ -153,6 +156,11 @@ public class UsuarioService : IUsuarioService
 
         await _userManager.RemoveFromRolesAsync(bdUsuario, rolesActuales);
         await _userManager.AddToRoleAsync(bdUsuario, cambio.Rol);
+
+        // El rol vive en Identity, fuera del contexto que audita el interceptor, y es de los
+        // cambios que más importa poder rastrear: se anota a mano.
+        await _bitacora.Registrar(perfilQueEjecuta, "Usuario", bdPerfil.Id, Bitacora.AccionModificado,
+            $"{bdPerfil.Nombre} {bdPerfil.Apellido}: rol {string.Join(", ", rolesActuales)} → {cambio.Rol}");
     }
 
     //AYUDANTES

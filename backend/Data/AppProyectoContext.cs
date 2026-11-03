@@ -17,6 +17,7 @@ public class AppProyectoContext : DbContext
     public DbSet<Asistencia> Asistencias { get; set; }
     public DbSet<Visita> Visitas { get; set; }
     public DbSet<Actividad_Nino> Actividad_Ninos { get; set; }
+    public DbSet<Bitacora> Bitacoras { get; set; }
 
     //RELACIONES
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +27,14 @@ public class AppProyectoContext : DbContext
         modelBuilder.Entity<Perfil>()
             .HasIndex(x => x.UsuarioId)
             .IsUnique();
+
+        //-----Bitacora-----
+        // Se consulta de la más reciente a la más antigua, y por entidad.
+        modelBuilder.Entity<Bitacora>()
+            .HasIndex(x => x.Fecha);
+
+        modelBuilder.Entity<Bitacora>()
+            .HasIndex(x => new { x.Entidad, x.EntidadId });
 
         //-----Grupo_Maestro, Grupo y Perfil-----
         // Un grupo tiene varios maestros y un maestro varios grupos, así que la

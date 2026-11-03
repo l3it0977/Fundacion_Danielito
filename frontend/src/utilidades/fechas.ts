@@ -15,6 +15,23 @@ export function fechaLocalDeHoy(): string {
   return `${anio}-${mes}-${dia}`;
 }
 
+/**
+ * Instante (UTC, en ISO) en que empieza un día del calendario local. Sirve para filtrar por
+ * rangos contra fechas guardadas en UTC: el 3 de noviembre en Bolivia empieza a las 04:00 UTC.
+ */
+export function inicioDelDiaEnUtc(fecha: string): string {
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+
+  return new Date(anio, mes - 1, dia, 0, 0, 0, 0).toISOString();
+}
+
+/** Último instante (UTC, en ISO) de un día del calendario local. */
+export function finDelDiaEnUtc(fecha: string): string {
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+
+  return new Date(anio, mes - 1, dia, 23, 59, 59, 999).toISOString();
+}
+
 /** Quita la hora de una fecha que llega del backend ("2026-10-13" o "2026-10-13T00:00:00"). */
 export function soloFecha(fechaDelServidor: string): string {
   return fechaDelServidor.split('T')[0];

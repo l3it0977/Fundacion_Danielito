@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,16 +21,24 @@ public sealed class BaseDeDatos : IDisposable
 
     public AppProyectoContext Context { get; }
 
-    public BaseDeDatos()
+    /// <summary>
+    /// conAuditoria activa el interceptor de la bitácora, como en la aplicación real.
+    /// usuario es quien "hace la petición"; null simula un proceso sin sesión (la siembra inicial).
+    /// </summary>
+    public BaseDeDatos(bool conAuditoria = false, ClaimsPrincipal? usuario = null)
     {
         _conexion = new SqliteConnection("DataSource=:memory:");
         _conexion.Open();
 
-        var opciones = new DbContextOptionsBuilder<AppProyectoContext>()
-            .UseSqlite(_conexion)
-            .Options;
+        var constructor = new DbContextOptionsBuilder<AppProyectoContext>().UseSqlite(_conexion);
 
-        Context = new AppProyectoContext(opciones);
+        if (conAuditoria)
+        {
+            var accesor = new HttpContextAccessor { HttpContext = new DefaultHttpContext { User = usuario ?? new ClaimsPrincipal() } };
+            constructor.AddInterceptors(new AuditoriaInterceptor(accesor, NullLogger<AuditoriaInterceptor>.Instance));
+        }
+
+        Context = new AppProyectoContext(constructor.Options);
         Context.Database.EnsureCreated();
     }
 
@@ -38,6 +48,16 @@ public sealed class BaseDeDatos : IDisposable
             cfg => cfg.AddProfile<MappingProfile>(), NullLoggerFactory.Instance);
 
         return configuracion.CreateMapper();
+    }
+
+    /// <summary>Una persona con sesión iniciada, con los mismos claims que lleva el JWT real.</summary>
+    public static ClaimsPrincipal UsuarioAutenticado(int perfilId, string nombre, string apellido)
+    {
+        var identidad = new ClaimsIdentity(
+            [new Claim("PerfilId", perfilId.ToString()), new Claim("Nombre", nombre), new Claim("Apellido", apellido)],
+            authenticationType: "prueba");
+
+        return new ClaimsPrincipal(identidad);
     }
 
     public Perfil CrearPerfil(string nombre, bool activo = true)
@@ -111,6 +131,13 @@ public sealed class BaseDeDatos : IDisposable
         Context.Asistencias.Add(asistencia);
         Context.SaveChanges();
         return asistencia;
+    }
+
+    /// <summary>Vacía la bitácora, para que la prueba cuente solo lo que ocurre después del armado.</summary>
+    public void LimpiarBitacora()
+    {
+        Context.Bitacoras.ExecuteDelete();
+        Context.ChangeTracker.Clear();
     }
 
     public void Dispose()

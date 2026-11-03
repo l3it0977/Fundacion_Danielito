@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   ClipboardList,
   FileSpreadsheet,
+  History,
   LayoutDashboard,
   Users,
   UserCog,
@@ -44,6 +45,12 @@ const ENLACES = [
     etiqueta: 'Usuarios',
     ruta: '/usuarios',
     Icono: UserCog,
+    roles: ['Directora', 'Administrador'] as const,
+  },
+  {
+    etiqueta: 'Bitácora',
+    ruta: '/bitacora',
+    Icono: History,
     roles: ['Directora', 'Administrador'] as const,
   },
 ];

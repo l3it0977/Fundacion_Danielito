@@ -82,6 +82,26 @@ export interface ResultadoPaginado<T> {
   totalPaginas: number;
 }
 
+export interface CambioBitacora {
+  campo: string;
+  antes: string | null;
+  despues: string | null;
+}
+
+/** Un renglón de la bitácora de auditoría. */
+export interface RegistroBitacora {
+  id: number;
+  /** Instante en UTC (termina en Z); se muestra en la hora local. */
+  fecha: string;
+  perfilId: number | null;
+  usuario: string;
+  entidad: string;
+  entidadId: number | null;
+  accion: string;
+  descripcion: string;
+  cambios: CambioBitacora[];
+}
+
 export type TipoActividad = 'normal' | 'intervencion';
 
 export interface Actividad {

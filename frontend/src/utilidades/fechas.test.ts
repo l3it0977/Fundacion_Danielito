@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fechaLocalDeHoy, formatearFecha, soloFecha } from './fechas';
+import { fechaLocalDeHoy, finDelDiaEnUtc, formatearFecha, inicioDelDiaEnUtc, soloFecha } from './fechas';
 
 describe('soloFecha', () => {
   it('deja intacta una fecha sin hora y quita la hora si la trae', () => {
@@ -23,6 +23,22 @@ describe('formatearFecha', () => {
 
   it('acepta también una fecha con hora', () => {
     expect(formatearFecha('2026-10-13T00:00:00')).toBe(esperada(2026, 10, 13));
+  });
+});
+
+describe('inicioDelDiaEnUtc y finDelDiaEnUtc', () => {
+  it('abarcan exactamente un día local, sea cual sea la zona horaria', () => {
+    const inicio = new Date(inicioDelDiaEnUtc('2026-11-03'));
+    const fin = new Date(finDelDiaEnUtc('2026-11-03'));
+
+    // Lo que importa: en hora local son las 00:00:00 y las 23:59:59 del mismo día.
+    expect([inicio.getFullYear(), inicio.getMonth(), inicio.getDate(), inicio.getHours()]).toEqual([2026, 10, 3, 0]);
+    expect([fin.getFullYear(), fin.getMonth(), fin.getDate(), fin.getHours(), fin.getMinutes()]).toEqual([2026, 10, 3, 23, 59]);
+  });
+
+  it('devuelven un ISO en UTC (termina en Z), como espera el servidor', () => {
+    expect(inicioDelDiaEnUtc('2026-11-03')).toMatch(/Z$/);
+    expect(finDelDiaEnUtc('2026-11-03')).toMatch(/Z$/);
   });
 });
 

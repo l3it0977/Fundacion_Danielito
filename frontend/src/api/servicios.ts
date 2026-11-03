@@ -11,6 +11,7 @@ import type {
   PanelMaestro,
   Perfil,
   ResultadoPaginado,
+  RegistroBitacora,
   RespuestaAutenticacion,
   Usuario,
   Visita,
@@ -171,6 +172,29 @@ function nombrePeriodo({ grupoId, mes, anio }: FiltrosReporte): string {
 
   return `${grupo}-${periodo}`;
 }
+
+export const servicioBitacora = {
+  buscar: (filtros: {
+    entidad?: string;
+    accion?: string;
+    texto?: string;
+    /** Instantes en UTC (ISO). */
+    desde?: string;
+    hasta?: string;
+    pagina?: number;
+    tamano?: number;
+  }) => {
+    const consulta = new URLSearchParams();
+
+    for (const [clave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== '') {
+        consulta.set(clave, String(valor));
+      }
+    }
+
+    return api.obtener<ResultadoPaginado<RegistroBitacora>>(`/Bitacora/Buscar?${consulta.toString()}`);
+  },
+};
 
 export const servicioReportes = {
   // grupoId o mes nulos = todos los grupos de edad / todos los meses del año.

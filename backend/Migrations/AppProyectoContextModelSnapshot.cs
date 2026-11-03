@@ -127,6 +127,55 @@ namespace SISTEMADANIELITO.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SISTEMADANIELITO.Models.Bitacora", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Cambios")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Entidad")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("EntidadId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PerfilId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha");
+
+                    b.HasIndex("Entidad", "EntidadId");
+
+                    b.ToTable("Bitacoras");
+                });
+
             modelBuilder.Entity("SISTEMADANIELITO.Models.Grupo", b =>
                 {
                     b.Property<int>("Id")

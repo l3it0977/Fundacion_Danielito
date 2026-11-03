@@ -13,6 +13,7 @@ import { AsignarNinos } from './paginas/AsignarNinos';
 import { Asistencia, ElegirActividadParaAsistencia } from './paginas/Asistencia';
 import { Grupos } from './paginas/Grupos';
 import { Usuarios } from './paginas/Usuarios';
+import { Bitacora } from './paginas/Bitacora';
 import { Reportes } from './paginas/Reportes';
 import { Importar } from './paginas/Importar';
 import { Perfil } from './paginas/Perfil';
@@ -108,6 +109,14 @@ export function App() {
               element={
                 <RutaProtegida rolesPermitidos={[...ADMINISTRACION]}>
                   <Usuarios />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="bitacora"
+              element={
+                <RutaProtegida rolesPermitidos={[...ADMINISTRACION]}>
+                  <Bitacora />
                 </RutaProtegida>
               }
             />

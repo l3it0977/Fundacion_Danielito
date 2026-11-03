@@ -75,7 +75,13 @@ string cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnec
     ?? throw new InvalidOperationException(
         "Falta la cadena de conexión 'DefaultConnection'. Configúrala con: dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"...\"");
 
-builder.Services.AddDbContext<AppProyectoContext>(options => options.UseNpgsql(cadenaConexion));
+// La auditoría necesita saber quién hace la petición para anotarlo en la bitácora.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<AuditoriaInterceptor>();
+
+builder.Services.AddDbContext<AppProyectoContext>((servicios, options) => options
+    .UseNpgsql(cadenaConexion)
+    .AddInterceptors(servicios.GetRequiredService<AuditoriaInterceptor>()));
 
 // Configuración de Identity con Entity Framework Core y PostgreSQL
 // Historial propio: si ambos contextos comparten __EFMigrationsHistory, cada uno ve las
@@ -95,6 +101,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // Configuración de servicios para inyección de dependencias
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBitacoraService, BitacoraService>();
 builder.Services.AddScoped<IGrupoService, GrupoService>();
 builder.Services.AddScoped<INinoService, NinoService>();
 builder.Services.AddScoped<IActividadService, ActividadService>();
