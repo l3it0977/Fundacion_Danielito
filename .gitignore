@@ -6,6 +6,9 @@
 # La configuración local va en user-secrets, fuera del repositorio.
 /backend/appsettings.*.local.json
 
+# Claves del despliegue con Docker (ver .env.example).
+/.env
+
 # ---------- Frontend (React) ----------
 /frontend/node_modules
 /frontend/dist

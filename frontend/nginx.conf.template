@@ -1,0 +1,75 @@
+# Servidor de la interfaz web. nginx sustituye ${API_UPSTREAM} al arrancar el contenedor.
+
+# Si otro proxy ya puso el protocolo (https), se respeta; si no, es el de esta conexión.
+map $http_x_forwarded_proto $protocolo_original {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # No anunciar la versión de nginx en las respuestas.
+    server_tokens off;
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # Si hay otro proxy delante (el que pone HTTPS), la dirección real del visitante llega en
+    # X-Forwarded-For. Solo se cree a proxies de redes privadas, para que un visitante de internet
+    # no pueda falsificarla. De esa dirección depende el límite de intentos de login.
+    set_real_ip_from 10.0.0.0/8;
+    set_real_ip_from 172.16.0.0/12;
+    set_real_ip_from 192.168.0.0/16;
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+
+    # ---------- Cabeceras de seguridad ----------
+    # OJO: en nginx, un add_header dentro de un location ANULA todos los de este nivel. Por eso los
+    # location de abajo no usan add_header (para el caché se usa "expires").
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+
+    # Lo único externo que carga la interfaz: la tipografía (Google Fonts) y las teselas del mapa
+    # (OpenStreetMap). El token de sesión vive en localStorage, así que esta política es la defensa
+    # principal contra un script inyectado que quisiera robarlo: solo se ejecuta código propio.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+
+    # ---------- API ----------
+    # Todo lo que empieza con /api va a la API, sin el prefijo. Mismo origen: no hay CORS.
+    location /api/ {
+        proxy_pass ${API_UPSTREAM}/;
+
+        proxy_set_header Host $host;
+        # Se REEMPLAZA (no se agrega) con la dirección ya validada arriba.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $protocolo_original;
+
+        # Un poco más que los 5 MB que acepta la importación de niños.
+        client_max_body_size 6m;
+        proxy_read_timeout 60s;
+    }
+
+    # Los archivos de /assets llevan un código en el nombre: si cambian, cambia el nombre.
+    # Por eso pueden guardarse un año sin riesgo de servir algo viejo.
+    location /assets/ {
+        expires 1y;
+        try_files $uri =404;
+    }
+
+    # La página principal nunca se guarda: así un despliegue nuevo se ve de inmediato.
+    location = /index.html {
+        expires -1;
+    }
+
+    # Cualquier otra ruta (/ninos, /reportes...) la resuelve la propia aplicación en el navegador.
+    location / {
+        try_files $uri /index.html;
+    }
+}

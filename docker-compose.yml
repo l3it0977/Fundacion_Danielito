@@ -1,0 +1,56 @@
+# Sistema Danielito completo: base de datos + API + interfaz web.
+#
+#   cp .env.example .env      (y llena los valores)
+#   docker compose up -d --build
+#
+# La interfaz queda en http://localhost:8080 (o el PUERTO_WEB que elijas). Ver docs/despliegue.md.
+
+name: sistema-danielito
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sistema_danielito
+      POSTGRES_USER: danielito
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en el archivo .env}
+    volumes:
+      # PostgreSQL 18 guarda sus datos dentro de /var/lib/postgresql (versión incluida en la ruta).
+      - datos-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U danielito -d sistema_danielito"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # La base solo es visible para la API, dentro de la red de Docker: no se publica ningún puerto.
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=sistema_danielito;Username=danielito;Password=${POSTGRES_PASSWORD}
+      Jwt__SecretKey: ${JWT_SECRET_KEY:?Falta JWT_SECRET_KEY en el archivo .env}
+      Seed__PasswordInicial: ${SEED_PASSWORD_INICIAL:?Falta SEED_PASSWORD_INICIAL en el archivo .env}
+      # La base nace vacía: la API crea las tablas al arrancar.
+      BaseDeDatos__MigrarAlIniciar: "true"
+      # Detrás del proxy de la interfaz web, que es lo único que llega a la API.
+      ForwardedHeaders__Habilitado: "true"
+    # Sin "ports": la API no se expone fuera de Docker. Solo la interfaz web la alcanza (en /api).
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${PUERTO_WEB:-8080}:80"
+
+volumes:
+  datos-db:

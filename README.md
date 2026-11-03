@@ -57,13 +57,27 @@ npm run dev
 
 La interfaz queda en `http://localhost:5173`.
 
-La dirección de la API se configura en `frontend/.env` mediante `VITE_API_URL`. Ese mismo
-origen debe estar autorizado en `Cors:OrigenesPermitidos` dentro de `backend/appsettings.json`.
+La dirección de la API se configura en `frontend/.env` mediante `VITE_API_URL` (ver
+`frontend/.env.example`). Ese mismo origen debe estar autorizado en `Cors:OrigenesPermitidos`;
+para desarrollo ya viene en `backend/appsettings.Development.json`. En producción no hay
+orígenes permitidos por omisión: se definen con la variable `Cors__OrigenesPermitidos__0`, o no
+hacen falta si la interfaz y la API salen por el mismo origen (como en el despliegue con Docker).
+
+## Despliegue
+
+`docker-compose.yml` levanta base de datos, API e interfaz web con un solo comando. Ver la guía
+completa, con HTTPS y copias de seguridad, en [docs/despliegue.md](docs/despliegue.md).
+
+```bash
+cp .env.example .env     # llenar las tres claves
+docker compose up -d --build
+```
 
 ## Pruebas
 
 ```bash
-# Backend: permisos de los maestros, asistencia, reportes, baja de niños y validación de cuentas.
+# Backend: permisos de los maestros, asistencia, reportes, baja de niños, validación de cuentas,
+# bitácora y pruebas de integración de la aplicación completa (cabeceras, 401/403, límite de login).
 # Si el servidor está corriendo, deténlo antes: Windows bloquea los archivos que está usando.
 dotnet test backend.Tests
 
@@ -73,7 +87,8 @@ npm test
 ```
 
 Las pruebas del backend usan SQLite en memoria, así que no tocan tu base de datos ni necesitan
-PostgreSQL.
+PostgreSQL. La integración continua (`.github/workflows/ci.yml`) las corre, junto con el lint, las
+pruebas y la compilación del frontend, en cada cambio.
 
 ## Copias de seguridad
 
@@ -119,6 +134,9 @@ Los usuarios no se eliminan, se desactivan, para conservar el registro de quién
 cada asistencia. Al desactivar a alguien pierde el acceso de inmediato: el servidor
 comprueba en cada petición que la cuenta siga activa (con un respaldo en memoria de un
 minuto), así que no hay que esperar a que expire el token de 2 horas.
+
+Toda alta, cambio y baja de niños, grupos, actividades, visitas y cuentas queda en la
+**Bitácora** (menú, solo dirección), con quién lo hizo y el antes y después de cada campo.
 
 Los niños siguen la misma lógica: se desactivan en lugar de borrarse, porque su historial
 de asistencias y visitas alimenta los reportes. Solo se puede eliminar una ficha creada por

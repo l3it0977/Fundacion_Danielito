@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (compila y prueba)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Compilar el proyecto de pruebas compila también el backend, que es una dependencia suya.
+      - name: Compilar
+        run: dotnet build backend.Tests --configuration Release
+
+      - name: Pruebas
+        run: dotnet test backend.Tests --configuration Release --no-build
+
+  frontend:
+    name: Frontend (revisa, prueba y compila)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # --deny-warnings: la base está en cero avisos y debe seguir así.
+      - name: Revisar el código
+        run: npm run lint -- --deny-warnings
+
+      - name: Pruebas
+        run: npm test
+
+      # Incluye la comprobación de tipos (tsc -b) antes de empaquetar.
+      - name: Compilar
+        run: npm run build
+
+  imagenes:
+    name: Imágenes de Docker
+    runs-on: ubuntu-latest
+    # Solo se construyen para comprobar que los Dockerfile siguen funcionando; no se publican.
+    env:
+      POSTGRES_PASSWORD: clave-de-prueba
+      JWT_SECRET_KEY: clave-de-prueba-de-al-menos-32-caracteres-xxxx
+      SEED_PASSWORD_INICIAL: Clave.Segura1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir las imágenes
+        run: docker compose build
