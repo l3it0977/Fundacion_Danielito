@@ -19,43 +19,43 @@ public class VisitaController : ControllerBase
     //CREAR
     [Authorize]
     [HttpPost]
-    public string Post(CreateVisitaDTO visita)
+    public async Task<string> Post(CreateVisitaDTO visita)
     {
-        _visitaService.Guardar(visita, User.ObtenerPerfilId());
+        await _visitaService.Guardar(visita, User.ObtenerPerfilId());
         return "Visita creada correctamente";
     }
 
     //OBTENER TODOS
     [Authorize]
     [HttpGet]
-    public List<VisitaDTO> Get()
+    public async Task<List<VisitaDTO>> Get()
     {
-        return _visitaService.ObtenerTodos(User.FiltroMaestro());
+        return await _visitaService.ObtenerTodos(User.FiltroMaestro());
     }
 
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
-    public VisitaDTO GetById(int id)
+    public async Task<VisitaDTO> GetById(int id)
     {
-        return _visitaService.ObtenerPorId(id);
+        return await _visitaService.ObtenerPorId(id);
     }
 
     //ACTUALIZAR
     [Authorize]
     [HttpPut]
-    public string Put(UpdateVisitaDTO visita)
+    public async Task<string> Put(UpdateVisitaDTO visita)
     {
-        _visitaService.Modificar(visita);
+        await _visitaService.Modificar(visita);
         return "Visita modificada correctamente";
     }
 
     //ELIMINAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpDelete("{id}")]
-    public string Delete(int id)
+    public async Task<string> Delete(int id)
     {
-        _visitaService.Eliminar(id);
+        await _visitaService.Eliminar(id);
         return "Visita eliminada correctamente";
     }
 }

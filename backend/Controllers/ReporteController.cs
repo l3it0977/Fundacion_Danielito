@@ -24,24 +24,38 @@ public class ReporteController : ControllerBase
     // grupoId omitido = todos los grupos de edad; mes omitido = todos los meses del año.
     [Authorize(Roles = "Directora,Administrador")]
     [HttpGet("Asistencia")]
-    public IActionResult GetAsistencia(int? grupoId, int? mes, int? anio)
+    public async Task<IActionResult> GetAsistencia(int? grupoId, int? mes, int? anio)
     {
         int anioElegido = anio ?? DateTime.Today.Year;
 
-        byte[] archivo = _reporteService.GenerarAsistencia(grupoId, mes, anioElegido);
+        byte[] archivo = await _reporteService.GenerarAsistencia(grupoId, mes, anioElegido);
 
         return File(archivo, "application/pdf",
             $"asistencia-{NombreDelPeriodo(grupoId, mes, anioElegido)}.pdf");
     }
 
-    //ACTIVIDADES
+    //ASISTENCIA EN EXCEL
     [Authorize(Roles = "Directora,Administrador")]
-    [HttpGet("Actividades")]
-    public IActionResult GetActividades(int? grupoId, int? mes, int? anio)
+    [HttpGet("AsistenciaExcel")]
+    public async Task<IActionResult> GetAsistenciaExcel(int? grupoId, int? mes, int? anio)
     {
         int anioElegido = anio ?? DateTime.Today.Year;
 
-        byte[] archivo = _reporteService.GenerarActividades(grupoId, mes, anioElegido);
+        byte[] archivo = await _reporteService.GenerarAsistenciaExcel(grupoId, mes, anioElegido);
+
+        return File(archivo,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"asistencia-{NombreDelPeriodo(grupoId, mes, anioElegido)}.xlsx");
+    }
+
+    //ACTIVIDADES
+    [Authorize(Roles = "Directora,Administrador")]
+    [HttpGet("Actividades")]
+    public async Task<IActionResult> GetActividades(int? grupoId, int? mes, int? anio)
+    {
+        int anioElegido = anio ?? DateTime.Today.Year;
+
+        byte[] archivo = await _reporteService.GenerarActividades(grupoId, mes, anioElegido);
 
         return File(archivo, "application/pdf",
             $"actividades-{NombreDelPeriodo(grupoId, mes, anioElegido)}.pdf");
@@ -53,9 +67,9 @@ public class ReporteController : ControllerBase
     // completos y siguen reservados a la dirección.
     [Authorize(Roles = "Directora,Administrador,Maestro")]
     [HttpGet("AsistenciaPorActividad/{actividadId}")]
-    public IActionResult GetAsistenciaPorActividad(int actividadId)
+    public async Task<IActionResult> GetAsistenciaPorActividad(int actividadId)
     {
-        byte[] archivo = _reporteService.GenerarAsistenciaPorActividad(actividadId, User.FiltroMaestro());
+        byte[] archivo = await _reporteService.GenerarAsistenciaPorActividad(actividadId, User.FiltroMaestro());
 
         return File(archivo, "application/pdf", $"asistencia-actividad-{actividadId}.pdf");
     }

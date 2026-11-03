@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
 using SISTEMADANIELITO.Data;
 using SISTEMADANIELITO.DTOS;
 using SISTEMADANIELITO.Excepciones;
@@ -31,7 +32,7 @@ public class ImportacionService : IImportacionService
     }
 
     //IMPORTAR
-    public ResultadoImportacionDTO ImportarNinos(Stream archivoExcel)
+    public async Task<ResultadoImportacionDTO> ImportarNinos(Stream archivoExcel)
     {
         ResultadoImportacionDTO resultado = new();
 
@@ -43,12 +44,13 @@ public class ImportacionService : IImportacionService
         ValidarColumnasObligatorias(columnas);
 
         // Se cargan una sola vez para no consultar la base en cada fila.
-        Dictionary<string, int> gruposPorNombre = _context.Grupos
-            .ToDictionary(grupo => grupo.Nombre.Trim().ToLower(), grupo => grupo.Id);
+        Dictionary<string, int> gruposPorNombre = await _context.Grupos
+            .ToDictionaryAsync(grupo => grupo.Nombre.Trim().ToLower(), grupo => grupo.Id);
 
-        HashSet<string> codigosExistentes = _context.Ninos
+        List<string> codigosEnLaBase = await _context.Ninos
             .Select(nino => nino.Codigo)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToListAsync();
+        HashSet<string> codigosExistentes = codigosEnLaBase.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         List<Nino> ninosParaGuardar = [];
 
@@ -123,14 +125,14 @@ public class ImportacionService : IImportacionService
         if (ninosParaGuardar.Count > 0)
         {
             _context.Ninos.AddRange(ninosParaGuardar);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         return resultado;
     }
 
     //PLANTILLA
-    public byte[] GenerarPlantilla()
+    public async Task<byte[]> GenerarPlantilla()
     {
         using var libro = new XLWorkbook();
         var hoja = libro.Worksheets.Add("Niños");
@@ -156,10 +158,10 @@ public class ImportacionService : IImportacionService
         hoja.Cell(2, 4).Style.DateFormat.Format = "dd/MM/yyyy";
 
         // El grupo se escribe por nombre, no por id, para que sea legible al llenar el archivo.
-        string primerGrupo = _context.Grupos
+        string primerGrupo = await _context.Grupos
             .OrderBy(grupo => grupo.Id)
             .Select(grupo => grupo.Nombre)
-            .FirstOrDefault() ?? "6 a 8 años";
+            .FirstOrDefaultAsync() ?? "6 a 8 años";
 
         hoja.Cell(2, 5).Value = primerGrupo;
 

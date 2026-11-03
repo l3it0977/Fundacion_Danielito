@@ -20,53 +20,53 @@ public class ActividadController : ControllerBase
     // Los maestros también organizan actividades y eligen a sus participantes.
     [Authorize(Roles = "Directora,Administrador,Maestro")]
     [HttpPost]
-    public string Post(CreateActividadDTO actividad)
+    public async Task<string> Post(CreateActividadDTO actividad)
     {
-        _actividadService.Guardar(actividad, User.ObtenerPerfilId());
+        await _actividadService.Guardar(actividad, User.ObtenerPerfilId());
         return "Actividad creada correctamente";
     }
 
     //OBTENER TODOS
     [Authorize]
     [HttpGet]
-    public List<ActividadDTO> Get()
+    public async Task<List<ActividadDTO>> Get()
     {
-        return _actividadService.ObtenerTodos(User.FiltroMaestro());
+        return await _actividadService.ObtenerTodos(User.FiltroMaestro());
     }
 
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
-    public ActividadDTO GetById(int id)
+    public async Task<ActividadDTO> GetById(int id)
     {
-        return _actividadService.ObtenerPorId(id, User.FiltroMaestro());
+        return await _actividadService.ObtenerPorId(id, User.FiltroMaestro());
     }
 
     //ACTUALIZAR
     // El filtro hace que un maestro solo pueda tocar las actividades que él creó.
     [Authorize(Roles = "Directora,Administrador,Maestro")]
     [HttpPut]
-    public string Put(UpdateActividadDTO actividad)
+    public async Task<string> Put(UpdateActividadDTO actividad)
     {
-        _actividadService.Modificar(actividad, User.FiltroMaestro());
+        await _actividadService.Modificar(actividad, User.FiltroMaestro());
         return "Actividad modificada correctamente";
     }
 
     //ELIMINAR
     [Authorize(Roles = "Directora,Administrador,Maestro")]
     [HttpDelete("{id}")]
-    public string Delete(int id)
+    public async Task<string> Delete(int id)
     {
-        _actividadService.Eliminar(id, User.FiltroMaestro());
+        await _actividadService.Eliminar(id, User.FiltroMaestro());
         return "Actividad eliminada correctamente";
     }
 
     //ASIGNAR NIÑOS
     [Authorize(Roles = "Directora,Administrador,Maestro")]
     [HttpPost("AsignarNinos")]
-    public string AsignarNinos(AsignarNinosDTO asignacion)
+    public async Task<string> AsignarNinos(AsignarNinosDTO asignacion)
     {
-        _actividadService.AsignarNinos(asignacion, User.FiltroMaestro());
+        await _actividadService.AsignarNinos(asignacion, User.FiltroMaestro());
         return "Niños asignados correctamente";
     }
 }

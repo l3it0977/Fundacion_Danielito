@@ -19,43 +19,43 @@ public class GrupoController : ControllerBase
     //CREAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPost]
-    public string Post(CreateGrupoDTO grupo)
+    public async Task<string> Post(CreateGrupoDTO grupo)
     {
-        _grupoService.Guardar(grupo);
+        await _grupoService.Guardar(grupo);
         return "Grupo creado correctamente";
     }
 
     //OBTENER TODOS
     [Authorize]
     [HttpGet]
-    public List<GrupoDTO> Get()
+    public async Task<List<GrupoDTO>> Get()
     {
-        return _grupoService.ObtenerTodos();
+        return await _grupoService.ObtenerTodos();
     }
 
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
-    public GrupoDTO GetById(int id)
+    public async Task<GrupoDTO> GetById(int id)
     {
-        return _grupoService.ObtenerPorId(id);
+        return await _grupoService.ObtenerPorId(id);
     }
 
     //ACTUALIZAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPut]
-    public string Put(UpdateGrupoDTO grupo)
+    public async Task<string> Put(UpdateGrupoDTO grupo)
     {
-        _grupoService.Modificar(grupo);
+        await _grupoService.Modificar(grupo);
         return "Grupo modificado correctamente";
     }
 
     //ELIMINAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpDelete("{id}")]
-    public string Delete(int id)
+    public async Task<string> Delete(int id)
     {
-        _grupoService.Eliminar(id);
+        await _grupoService.Eliminar(id);
         return "Grupo eliminado correctamente";
     }
 }

@@ -21,60 +21,60 @@ public class AsistenciaController : ControllerBase
     // la acción a las actividades a las que tiene acceso.
     [Authorize]
     [HttpPost]
-    public string Post(CreateAsistenciaDTO asistencia)
+    public async Task<string> Post(CreateAsistenciaDTO asistencia)
     {
-        _asistenciaService.Guardar(asistencia, User.ObtenerPerfilId(), User.FiltroMaestro());
+        await _asistenciaService.Guardar(asistencia, User.ObtenerPerfilId(), User.FiltroMaestro());
         return "Asistencia registrada correctamente";
     }
 
     //REGISTRAR POR ACTIVIDAD
     [Authorize]
     [HttpPost("RegistrarPorActividad")]
-    public string RegistrarPorActividad(RegistrarAsistenciasDTO registro)
+    public async Task<string> RegistrarPorActividad(RegistrarAsistenciasDTO registro)
     {
-        _asistenciaService.RegistrarPorActividad(registro, User.ObtenerPerfilId(), User.FiltroMaestro());
+        await _asistenciaService.RegistrarPorActividad(registro, User.ObtenerPerfilId(), User.FiltroMaestro());
         return "Asistencias registradas correctamente";
     }
 
     //OBTENER TODOS
     [Authorize(Roles = "Directora,Administrador")]
     [HttpGet]
-    public List<AsistenciaDTO> Get()
+    public async Task<List<AsistenciaDTO>> Get()
     {
-        return _asistenciaService.ObtenerTodos();
+        return await _asistenciaService.ObtenerTodos();
     }
 
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
-    public AsistenciaDTO GetById(int id)
+    public async Task<AsistenciaDTO> GetById(int id)
     {
-        return _asistenciaService.ObtenerPorId(id, User.FiltroMaestro());
+        return await _asistenciaService.ObtenerPorId(id, User.FiltroMaestro());
     }
 
     //OBTENER POR ACTIVIDAD
     [Authorize]
     [HttpGet("Actividad/{actividadId}")]
-    public List<AsistenciaDTO> GetPorActividad(int actividadId)
+    public async Task<List<AsistenciaDTO>> GetPorActividad(int actividadId)
     {
-        return _asistenciaService.ObtenerPorActividad(actividadId, User.FiltroMaestro());
+        return await _asistenciaService.ObtenerPorActividad(actividadId, User.FiltroMaestro());
     }
 
     //ACTUALIZAR
     [Authorize]
     [HttpPut]
-    public string Put(UpdateAsistenciaDTO asistencia)
+    public async Task<string> Put(UpdateAsistenciaDTO asistencia)
     {
-        _asistenciaService.Modificar(asistencia, User.FiltroMaestro());
+        await _asistenciaService.Modificar(asistencia, User.FiltroMaestro());
         return "Asistencia modificada correctamente";
     }
 
     //ELIMINAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpDelete("{id}")]
-    public string Delete(int id)
+    public async Task<string> Delete(int id)
     {
-        _asistenciaService.Eliminar(id);
+        await _asistenciaService.Eliminar(id);
         return "Asistencia eliminada correctamente";
     }
 }

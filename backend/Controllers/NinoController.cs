@@ -19,26 +19,26 @@ public class NinoController : ControllerBase
     //CREAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPost]
-    public string Post(CreateNinoDTO nino)
+    public async Task<string> Post(CreateNinoDTO nino)
     {
-        _ninoService.Guardar(nino);
+        await _ninoService.Guardar(nino);
         return "Niño creado correctamente";
     }
 
     //OBTENER TODOS
     [Authorize]
     [HttpGet]
-    public List<NinoDTO> Get()
+    public async Task<List<NinoDTO>> Get()
     {
-        return _ninoService.ObtenerTodos(User.FiltroMaestro());
+        return await _ninoService.ObtenerTodos(User.FiltroMaestro());
     }
 
     //OBTENER POR ID
     [Authorize]
     [HttpGet("{Id}")]
-    public NinoDTO GetById(int id)
+    public async Task<NinoDTO> GetById(int id)
     {
-        return _ninoService.ObtenerPorId(id, User.FiltroMaestro());
+        return await _ninoService.ObtenerPorId(id, User.FiltroMaestro());
     }
 
     //OBTENER PARA SELECCION
@@ -47,26 +47,26 @@ public class NinoController : ControllerBase
     // la ficha con contacto, observaciones y domicilio sigue restringida.
     [Authorize]
     [HttpGet("ParaSeleccion")]
-    public List<NinoSeleccionDTO> GetParaSeleccion()
+    public async Task<List<NinoSeleccionDTO>> GetParaSeleccion()
     {
-        return _ninoService.ObtenerParaSeleccion();
+        return await _ninoService.ObtenerParaSeleccion();
     }
 
     //ACTUALIZAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPut]
-    public string Put(UpdateNinoDTO nino)
+    public async Task<string> Put(UpdateNinoDTO nino)
     {
-        _ninoService.Modificar(nino);
+        await _ninoService.Modificar(nino);
         return "Niño modificado correctamente";
     }
 
     //ACTIVAR O DESACTIVAR
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPut("Estado")]
-    public string PutEstado(CambiarEstadoNinoDTO cambio)
+    public async Task<string> PutEstado(CambiarEstadoNinoDTO cambio)
     {
-        _ninoService.CambiarEstado(cambio);
+        await _ninoService.CambiarEstado(cambio);
 
         return cambio.Activo
             ? "Niño activado correctamente"
@@ -77,9 +77,9 @@ public class NinoController : ControllerBase
     // Solo prospera con fichas sin historial; si ya tiene registros, se desactiva.
     [Authorize(Roles = "Directora,Administrador")]
     [HttpDelete("{id}")]
-    public string Delete(int id)
+    public async Task<string> Delete(int id)
     {
-        _ninoService.Eliminar(id);
+        await _ninoService.Eliminar(id);
         return "Niño eliminado correctamente";
     }
 }

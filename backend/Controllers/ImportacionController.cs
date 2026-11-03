@@ -23,7 +23,7 @@ public class ImportacionController : ControllerBase
     //IMPORTAR NIÑOS
     [Authorize(Roles = "Directora,Administrador")]
     [HttpPost("Ninos")]
-    public ResultadoImportacionDTO PostNinos(IFormFile archivo)
+    public async Task<ResultadoImportacionDTO> PostNinos(IFormFile archivo)
     {
         if (archivo == null || archivo.Length == 0)
         {
@@ -44,15 +44,15 @@ public class ImportacionController : ControllerBase
         // Se lee directamente del flujo de la petición: el archivo no se guarda en disco.
         using Stream contenido = archivo.OpenReadStream();
 
-        return _importacionService.ImportarNinos(contenido);
+        return await _importacionService.ImportarNinos(contenido);
     }
 
     //DESCARGAR PLANTILLA
     [Authorize(Roles = "Directora,Administrador")]
     [HttpGet("Plantilla")]
-    public IActionResult GetPlantilla()
+    public async Task<IActionResult> GetPlantilla()
     {
-        byte[] archivo = _importacionService.GenerarPlantilla();
+        byte[] archivo = await _importacionService.GenerarPlantilla();
 
         return File(archivo,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

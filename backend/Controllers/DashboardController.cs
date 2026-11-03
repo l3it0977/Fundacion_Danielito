@@ -19,9 +19,9 @@ public class DashboardController : ControllerBase
     //PANEL GENERAL
     [Authorize(Roles = "Directora,Administrador")]
     [HttpGet("General")]
-    public DashboardGeneralDTO GetGeneral()
+    public async Task<DashboardGeneralDTO> GetGeneral()
     {
-        return _dashboardService.ObtenerGeneral();
+        return await _dashboardService.ObtenerGeneral();
     }
 
     //PANEL DEL MAESTRO
@@ -29,8 +29,8 @@ public class DashboardController : ControllerBase
     // cambiando un id en la URL.
     [Authorize(Roles = "Maestro")]
     [HttpGet("Maestro")]
-    public DashboardMaestroDTO GetMaestro()
+    public async Task<DashboardMaestroDTO> GetMaestro()
     {
-        return _dashboardService.ObtenerDelMaestro(User.ObtenerPerfilId());
+        return await _dashboardService.ObtenerDelMaestro(User.ObtenerPerfilId());
     }
 }

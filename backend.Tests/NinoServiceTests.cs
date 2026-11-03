@@ -21,18 +21,18 @@ public class NinoServiceTests : IDisposable
     public void Dispose() => _bd.Dispose();
 
     [Fact]
-    public void Eliminar_FichaSinHistorial_LaBorra()
+    public async Task Eliminar_FichaSinHistorial_LaBorra()
     {
         var grupo = _bd.CrearGrupo("6 a 8 años");
         var nino = _bd.CrearNino(grupo, "N-1");
 
-        _servicio.Eliminar(nino.Id);
+        await _servicio.Eliminar(nino.Id);
 
         Assert.False(_bd.Context.Ninos.Any(x => x.Id == nino.Id));
     }
 
     [Fact]
-    public void Eliminar_ConAsistencias_SeRechazaYConservaTodo()
+    public async Task Eliminar_ConAsistencias_SeRechazaYConservaTodo()
     {
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
@@ -40,27 +40,27 @@ public class NinoServiceTests : IDisposable
         var actividad = _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
         _bd.CrearAsistencia(actividad, nino, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, maestro);
 
-        Assert.Throws<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
+        await Assert.ThrowsAsync<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
 
         Assert.True(_bd.Context.Ninos.Any(x => x.Id == nino.Id));
         Assert.Equal(1, _bd.Context.Asistencias.Count());
     }
 
     [Fact]
-    public void Eliminar_SoloAsignadoAUnaActividad_SeRechaza()
+    public async Task Eliminar_SoloAsignadoAUnaActividad_SeRechaza()
     {
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
         var nino = _bd.CrearNino(grupo, "N-1");
         _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
 
-        Assert.Throws<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
+        await Assert.ThrowsAsync<ReglaNegocioException>(() => _servicio.Eliminar(nino.Id));
     }
 
     [Fact]
-    public void Eliminar_NinoInexistente_LanzaNoEncontrado()
+    public async Task Eliminar_NinoInexistente_LanzaNoEncontrado()
     {
-        Assert.Throws<RecursoNoEncontradoException>(() => _servicio.Eliminar(999));
+        await Assert.ThrowsAsync<RecursoNoEncontradoException>(() => _servicio.Eliminar(999));
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class NinoServiceTests : IDisposable
     }
 
     [Fact]
-    public void CambiarEstado_Desactivar_ConservaElHistorialYLoQuitaDeLaSeleccion()
+    public async Task CambiarEstado_Desactivar_ConservaElHistorialYLoQuitaDeLaSeleccion()
     {
         var maestro = _bd.CrearPerfil("Maestro");
         var grupo = _bd.CrearGrupo("6 a 8 años", maestro);
@@ -90,31 +90,31 @@ public class NinoServiceTests : IDisposable
         var actividad = _bd.CrearActividad(maestro, new DateOnly(2026, 10, 1), nino);
         _bd.CrearAsistencia(actividad, nino, new DateOnly(2026, 10, 1), Asistencia.EstadoPresente, maestro);
 
-        _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = nino.Id, Activo = false });
+        await _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = nino.Id, Activo = false });
 
         Assert.False(_bd.Context.Ninos.Single(x => x.Id == nino.Id).Activo);
         Assert.Equal(1, _bd.Context.Asistencias.Count());
 
-        var seleccion = _servicio.ObtenerParaSeleccion();
+        var seleccion = await _servicio.ObtenerParaSeleccion();
         Assert.Single(seleccion);
         Assert.Equal(otro.Id, seleccion[0].Id);
     }
 
     [Fact]
-    public void CambiarEstado_Reactivar_VuelveAAparecerEnLaSeleccion()
+    public async Task CambiarEstado_Reactivar_VuelveAAparecerEnLaSeleccion()
     {
         var grupo = _bd.CrearGrupo("6 a 8 años");
         var nino = _bd.CrearNino(grupo, "N-1", activo: false);
 
-        _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = nino.Id, Activo = true });
+        await _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = nino.Id, Activo = true });
 
-        Assert.Single(_servicio.ObtenerParaSeleccion());
+        Assert.Single(await _servicio.ObtenerParaSeleccion());
     }
 
     [Fact]
-    public void CambiarEstado_NinoInexistente_LanzaNoEncontrado()
+    public async Task CambiarEstado_NinoInexistente_LanzaNoEncontrado()
     {
-        Assert.Throws<RecursoNoEncontradoException>(() =>
+        await Assert.ThrowsAsync<RecursoNoEncontradoException>(() =>
             _servicio.CambiarEstado(new CambiarEstadoNinoDTO { NinoId = 999, Activo = false }));
     }
 }

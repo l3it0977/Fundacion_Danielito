@@ -28,13 +28,13 @@ public class DashboardService : IDashboardService
     }
 
     //PANEL GENERAL (DIRECTORA Y ADMINISTRADOR)
-    public DashboardGeneralDTO ObtenerGeneral()
+    public async Task<DashboardGeneralDTO> ObtenerGeneral()
     {
         // Un solo recorrido de la tabla de asistencias para los tres estados.
-        List<ConteoPorEstado> conteoEstados = _context.Asistencias
+        List<ConteoPorEstado> conteoEstados = await _context.Asistencias
             .GroupBy(x => x.Estado)
             .Select(grupo => new ConteoPorEstado { Estado = grupo.Key, Cantidad = grupo.Count() })
-            .ToList();
+            .ToListAsync();
 
         int presentes = BuscarCantidad(conteoEstados, Asistencia.EstadoPresente);
         int ausentes = BuscarCantidad(conteoEstados, Asistencia.EstadoAusente);
@@ -45,7 +45,7 @@ public class DashboardService : IDashboardService
         int totalAsistencias = presentes + ausentes + justificados;
 
         // Equivale al SUM(CASE WHEN estado = 'presente'...) agrupado por grupo.
-        List<AsistenciaPorGrupoDTO> asistenciaPorGrupo = _context.Asistencias
+        List<AsistenciaPorGrupoDTO> asistenciaPorGrupo = await _context.Asistencias
             .GroupBy(x => x.Nino.Grupo.Nombre)
             .Select(grupo => new AsistenciaPorGrupoDTO
             {
@@ -56,9 +56,9 @@ public class DashboardService : IDashboardService
                 Justificados = grupo.Count(x => x.Estado == Asistencia.EstadoJustificado)
             })
             .OrderBy(x => x.Grupo)
-            .ToList();
+            .ToListAsync();
 
-        List<ActividadResumenDTO> ultimasActividades = _context.Actividades
+        List<ActividadResumenDTO> ultimasActividades = await _context.Actividades
             .OrderByDescending(x => x.Fecha_Actividad)
             .Take(5)
             .Select(x => new ActividadResumenDTO
@@ -69,9 +69,9 @@ public class DashboardService : IDashboardService
                 Tipo = x.Tipo,
                 Grupos = x.Actividad_Ninos.Select(an => an.Nino.Grupo.Nombre).Distinct().ToList()
             })
-            .ToList();
+            .ToListAsync();
 
-        List<NinoResumenDTO> listaVulnerables = _context.Ninos
+        List<NinoResumenDTO> listaVulnerables = await _context.Ninos
             .Where(x => x.Vulnerable)
             .OrderBy(x => x.Apellidos)
             .ThenBy(x => x.Nombres)
@@ -83,13 +83,17 @@ public class DashboardService : IDashboardService
                 Grupo = x.Grupo.Nombre,
                 Motivo_Vulnerabilidad = x.Motivo_Vulnerabilidad
             })
-            .ToList();
+            .ToListAsync();
+
+        int totalNinos = await _context.Ninos.CountAsync();
+        int totalGrupos = await _context.Grupos.CountAsync();
+        int totalActividades = await _context.Actividades.CountAsync();
 
         return new DashboardGeneralDTO
         {
-            Total_Ninos = _context.Ninos.Count(),
-            Total_Grupos = _context.Grupos.Count(),
-            Total_Actividades = _context.Actividades.Count(),
+            Total_Ninos = totalNinos,
+            Total_Grupos = totalGrupos,
+            Total_Actividades = totalActividades,
             Total_Asistencias = totalAsistencias,
             Ninos_Vulnerables = listaVulnerables.Count,
             Presentes = presentes,
@@ -103,7 +107,7 @@ public class DashboardService : IDashboardService
     }
 
     //PANEL DEL MAESTRO
-    public DashboardMaestroDTO ObtenerDelMaestro(int maestroId)
+    public async Task<DashboardMaestroDTO> ObtenerDelMaestro(int maestroId)
     {
         // Todo el panel se limita a los niños de los grupos de este maestro.
         IQueryable<Nino> misNinos = _context.Ninos
@@ -113,12 +117,12 @@ public class DashboardService : IDashboardService
         DateOnly inicioDelMes = new(DateTime.Today.Year, DateTime.Today.Month, 1);
         DateOnly inicioDelMesSiguiente = inicioDelMes.AddMonths(1);
 
-        List<ConteoPorEstado> conteoDelMes = _context.Asistencias
+        List<ConteoPorEstado> conteoDelMes = await _context.Asistencias
             .Where(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId))
             .Where(x => x.Fecha >= inicioDelMes && x.Fecha < inicioDelMesSiguiente)
             .GroupBy(x => x.Estado)
             .Select(grupo => new ConteoPorEstado { Estado = grupo.Key, Cantidad = grupo.Count() })
-            .ToList();
+            .ToListAsync();
 
         int presentesDelMes = BuscarCantidad(conteoDelMes, Asistencia.EstadoPresente);
         int ausentesDelMes = BuscarCantidad(conteoDelMes, Asistencia.EstadoAusente);
@@ -127,7 +131,7 @@ public class DashboardService : IDashboardService
         // Igual que en el panel general: los pendientes no cuentan como lista pasada.
         int totalDelMes = presentesDelMes + ausentesDelMes + justificadosDelMes;
 
-        List<TopAsistenteDTO> masAsistentes = _context.Asistencias
+        List<TopAsistenteDTO> masAsistentes = await _context.Asistencias
             .Where(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId))
             .Where(x => x.Estado == Asistencia.EstadoPresente)
             .GroupBy(x => new { x.NinoId, x.Nino.Nombres, x.Nino.Apellidos })
@@ -139,18 +143,23 @@ public class DashboardService : IDashboardService
             })
             .OrderByDescending(x => x.Total_Asistencias)
             .Take(5)
-            .ToList();
+            .ToListAsync();
+
+        int totalMisNinos = await misNinos.CountAsync();
+        int totalMisActividades = await _context.Actividades
+            .CountAsync(x => x.CreadoPorId == maestroId ||
+                x.Actividad_Ninos.Any(an =>
+                    an.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId)));
+        int totalMisAsistencias = await _context.Asistencias
+            .CountAsync(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
+        List<CumpleanosDTO> cumpleanosCercanos = await ObtenerCumpleanosCercanos(maestroId);
 
         return new DashboardMaestroDTO
         {
-            Total_Mis_Ninos = misNinos.Count(),
-            Total_Mis_Actividades = _context.Actividades
-                .Count(x => x.CreadoPorId == maestroId ||
-                    x.Actividad_Ninos.Any(an =>
-                        an.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId))),
-            Total_Mis_Asistencias = _context.Asistencias
-                .Count(x => x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId)),
-            Cumpleanos_Cercanos = ObtenerCumpleanosCercanos(maestroId),
+            Total_Mis_Ninos = totalMisNinos,
+            Total_Mis_Actividades = totalMisActividades,
+            Total_Mis_Asistencias = totalMisAsistencias,
+            Cumpleanos_Cercanos = cumpleanosCercanos,
             Mis_Mas_Asistentes = masAsistentes,
             Asistencia_Del_Mes = new ResumenAsistenciaDTO
             {
@@ -168,11 +177,11 @@ public class DashboardService : IDashboardService
     /// El cálculo se hace en memoria porque implica mover el cumpleaños al año actual
     /// (y al siguiente si ya pasó), algo que no se puede traducir a SQL directamente.
     /// </summary>
-    private List<CumpleanosDTO> ObtenerCumpleanosCercanos(int maestroId)
+    private async Task<List<CumpleanosDTO>> ObtenerCumpleanosCercanos(int maestroId)
     {
         DateOnly hoy = DateOnly.FromDateTime(DateTime.Today);
 
-        var ninosConFecha = _context.Ninos
+        var ninosConFecha = await _context.Ninos
             .Where(x => x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId)
                 && x.Fecha_Nacimiento != null)
             .Select(x => new
@@ -182,7 +191,7 @@ public class DashboardService : IDashboardService
                 x.Apellidos,
                 Fecha_Nacimiento = x.Fecha_Nacimiento!.Value
             })
-            .ToList();
+            .ToListAsync();
 
         List<CumpleanosDTO> proximos = [];
 

@@ -20,10 +20,10 @@ public class ActividadService : IActividadService
     }
 
     //CREAR
-    public void Guardar(CreateActividadDTO actividad, int creadoPorId)
+    public async Task Guardar(CreateActividadDTO actividad, int creadoPorId)
     {
         ValidarTipo(actividad.Tipo);
-        List<int> ninosElegidos = ValidarNinos(actividad.NinosId);
+        List<int> ninosElegidos = await ValidarNinos(actividad.NinosId);
 
         Actividad actividadModel = _mapper.Map<Actividad>(actividad);
         actividadModel.CreadoPorId = creadoPorId;
@@ -36,19 +36,19 @@ public class ActividadService : IActividadService
             .ToList();
 
         _context.Actividades.Add(actividadModel);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         // Se guarda primero para que la actividad tenga Id, que la asistencia necesita.
-        GenerarAsistenciaPendiente(actividadModel, ninosElegidos, creadoPorId);
-        _context.SaveChanges();
+        await GenerarAsistenciaPendiente(actividadModel, ninosElegidos, creadoPorId);
+        await _context.SaveChangesAsync();
     }
 
     //ACTUALIZAR
-    public void Modificar(UpdateActividadDTO actividad, int? maestroId)
+    public async Task Modificar(UpdateActividadDTO actividad, int? maestroId)
     {
-        Actividad? bdActividad = _context.Actividades
+        Actividad? bdActividad = await _context.Actividades
             .Include(x => x.Actividad_Ninos)
-            .FirstOrDefault(x => x.Id.Equals(actividad.Id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(actividad.Id));
 
         if (bdActividad == null)
         {
@@ -57,7 +57,7 @@ public class ActividadService : IActividadService
 
         ValidarQuePuedaEditarla(bdActividad, maestroId);
         ValidarTipo(actividad.Tipo);
-        List<int> ninosElegidos = ValidarNinos(actividad.NinosId);
+        List<int> ninosElegidos = await ValidarNinos(actividad.NinosId);
 
         bdActividad.Nombre = actividad.Nombre;
         bdActividad.Descripcion = actividad.Descripcion;
@@ -65,16 +65,16 @@ public class ActividadService : IActividadService
         bdActividad.Tipo = actividad.Tipo;
         bdActividad.Activa = actividad.Activa;
 
-        SincronizarParticipantes(bdActividad, ninosElegidos, bdActividad.CreadoPorId);
+        await SincronizarParticipantes(bdActividad, ninosElegidos, bdActividad.CreadoPorId);
 
         _context.Actividades.Update(bdActividad);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ELIMINAR
-    public void Eliminar(int id, int? maestroId)
+    public async Task Eliminar(int id, int? maestroId)
     {
-        Actividad? actividad = _context.Actividades.FirstOrDefault(x => x.Id.Equals(id));
+        Actividad? actividad = await _context.Actividades.FirstOrDefaultAsync(x => x.Id.Equals(id));
         if (actividad == null)
         {
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
@@ -83,21 +83,21 @@ public class ActividadService : IActividadService
         ValidarQuePuedaEditarla(actividad, maestroId);
 
         _context.Actividades.Remove(actividad);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //OBTENER POR ID
-    public ActividadDTO ObtenerPorId(int id, int? maestroId)
+    public async Task<ActividadDTO> ObtenerPorId(int id, int? maestroId)
     {
-        Actividad? actividad = ConsultaConRelaciones()
-            .FirstOrDefault(x => x.Id.Equals(id));
+        Actividad? actividad = await ConsultaConRelaciones()
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (actividad == null)
         {
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
         }
 
-        if (maestroId != null && !EsVisiblePara(actividad, maestroId.Value))
+        if (maestroId != null && !await EsVisiblePara(actividad, maestroId.Value))
         {
             throw (new UnauthorizedAccessException("No tiene acceso a esta actividad"));
         }
@@ -107,7 +107,7 @@ public class ActividadService : IActividadService
     }
 
     //OBTENER TODOS
-    public List<ActividadDTO> ObtenerTodos(int? maestroId)
+    public async Task<List<ActividadDTO>> ObtenerTodos(int? maestroId)
     {
         IQueryable<Actividad> consulta = ConsultaConRelaciones();
 
@@ -120,20 +120,20 @@ public class ActividadService : IActividadService
                     an.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId)));
         }
 
-        List<Actividad> lstActividades = consulta
+        List<Actividad> lstActividades = await consulta
             .OrderByDescending(x => x.Fecha_Actividad)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<ActividadDTO>>(lstActividades);
         return dto;
     }
 
     //ASIGNAR NIÑOS
-    public void AsignarNinos(AsignarNinosDTO asignacion, int? maestroId)
+    public async Task AsignarNinos(AsignarNinosDTO asignacion, int? maestroId)
     {
-        Actividad? bdActividad = _context.Actividades
+        Actividad? bdActividad = await _context.Actividades
             .Include(x => x.Actividad_Ninos)
-            .FirstOrDefault(x => x.Id.Equals(asignacion.ActividadId));
+            .FirstOrDefaultAsync(x => x.Id.Equals(asignacion.ActividadId));
 
         if (bdActividad == null)
         {
@@ -143,11 +143,11 @@ public class ActividadService : IActividadService
         ValidarQuePuedaEditarla(bdActividad, maestroId);
 
         // Se admite cualquier niño: la actividad ya no está limitada a ciertos grupos.
-        List<int> ninosElegidos = ValidarNinos(asignacion.NinosId);
+        List<int> ninosElegidos = await ValidarNinos(asignacion.NinosId);
 
-        SincronizarParticipantes(bdActividad, ninosElegidos, bdActividad.CreadoPorId);
+        await SincronizarParticipantes(bdActividad, ninosElegidos, bdActividad.CreadoPorId);
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //VALIDAR ACCESO
@@ -157,16 +157,16 @@ public class ActividadService : IActividadService
     /// a las que creó y a las que incluyen a algún niño de sus grupos. Asistencia y
     /// reportes lo usan para no repetir la regla en cada servicio.
     /// </summary>
-    public void ValidarAcceso(int actividadId, int? maestroId)
+    public async Task ValidarAcceso(int actividadId, int? maestroId)
     {
-        Actividad? bdActividad = _context.Actividades.FirstOrDefault(x => x.Id.Equals(actividadId));
+        Actividad? bdActividad = await _context.Actividades.FirstOrDefaultAsync(x => x.Id.Equals(actividadId));
 
         if (bdActividad == null)
         {
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
         }
 
-        if (maestroId != null && !EsVisiblePara(bdActividad, maestroId.Value))
+        if (maestroId != null && !await EsVisiblePara(bdActividad, maestroId.Value))
         {
             throw (new UnauthorizedAccessException("No tiene acceso a esta actividad"));
         }
@@ -188,7 +188,7 @@ public class ActividadService : IActividadService
     /// Deja la lista de participantes igual a la recibida y mantiene la asistencia
     /// al día: quita la de los niños retirados y crea la de los nuevos.
     /// </summary>
-    private void SincronizarParticipantes(Actividad bdActividad, List<int> ninosElegidos, int registradoPorId)
+    private async Task SincronizarParticipantes(Actividad bdActividad, List<int> ninosElegidos, int registradoPorId)
     {
         List<int> ninosRetirados = bdActividad.Actividad_Ninos
             .Where(x => !ninosElegidos.Contains(x.NinoId))
@@ -202,11 +202,11 @@ public class ActividadService : IActividadService
         // tener sentido. La ya registrada se conserva: es historial de lo ocurrido.
         if (ninosRetirados.Count > 0)
         {
-            List<Asistencia> pendientesARetirar = _context.Asistencias
+            List<Asistencia> pendientesARetirar = await _context.Asistencias
                 .Where(x => x.ActividadId == bdActividad.Id
                     && ninosRetirados.Contains(x.NinoId)
                     && x.Estado == Asistencia.EstadoPendiente)
-                .ToList();
+                .ToListAsync();
 
             _context.Asistencias.RemoveRange(pendientesARetirar);
         }
@@ -223,7 +223,7 @@ public class ActividadService : IActividadService
             });
         }
 
-        GenerarAsistenciaPendiente(bdActividad, ninosNuevos, registradoPorId);
+        await GenerarAsistenciaPendiente(bdActividad, ninosNuevos, registradoPorId);
     }
 
     /// <summary>
@@ -231,7 +231,7 @@ public class ActividadService : IActividadService
     /// pendiente y con la fecha de la actividad. Así el maestro encuentra la lista
     /// ya armada al pasar asistencia, en vez de tener que crearla a mano.
     /// </summary>
-    private void GenerarAsistenciaPendiente(Actividad actividad, List<int> ninosId, int registradoPorId)
+    private async Task GenerarAsistenciaPendiente(Actividad actividad, List<int> ninosId, int registradoPorId)
     {
         if (ninosId.Count == 0)
         {
@@ -241,10 +241,10 @@ public class ActividadService : IActividadService
         DateOnly fechaDeLaLista = actividad.Fecha_Actividad;
 
         // Puede haber asistencia previa si al niño se le quitó y se le volvió a agregar.
-        List<int> yaTienenRegistro = _context.Asistencias
+        List<int> yaTienenRegistro = await _context.Asistencias
             .Where(x => x.ActividadId == actividad.Id && x.Fecha == fechaDeLaLista)
             .Select(x => x.NinoId)
-            .ToList();
+            .ToListAsync();
 
         foreach (int ninoId in ninosId.Where(x => !yaTienenRegistro.Contains(x)))
         {
@@ -260,14 +260,14 @@ public class ActividadService : IActividadService
     }
 
     /// <summary>Un maestro solo ve lo que organizó o lo que involucra a sus niños.</summary>
-    private bool EsVisiblePara(Actividad actividad, int maestroId)
+    private async Task<bool> EsVisiblePara(Actividad actividad, int maestroId)
     {
         if (actividad.CreadoPorId == maestroId)
         {
             return true;
         }
 
-        return _context.Actividad_Ninos.Any(x =>
+        return await _context.Actividad_Ninos.AnyAsync(x =>
             x.ActividadId == actividad.Id &&
             x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
     }
@@ -295,7 +295,7 @@ public class ActividadService : IActividadService
     }
 
     /// <summary>Comprueba que los niños existan. Ya no importa de qué grupo sean.</summary>
-    private List<int> ValidarNinos(List<int> ninosId)
+    private async Task<List<int>> ValidarNinos(List<int> ninosId)
     {
         List<int> sinRepetidos = ninosId.Distinct().ToList();
 
@@ -304,7 +304,7 @@ public class ActividadService : IActividadService
             throw (new ReglaNegocioException("Debe elegir al menos un niño participante"));
         }
 
-        int encontrados = _context.Ninos.Count(x => sinRepetidos.Contains(x.Id));
+        int encontrados = await _context.Ninos.CountAsync(x => sinRepetidos.Contains(x.Id));
 
         if (encontrados != sinRepetidos.Count)
         {

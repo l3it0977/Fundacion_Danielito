@@ -25,14 +25,14 @@ public class AsistenciaService : IAsistenciaService
     }
 
     //CREAR
-    public void Guardar(CreateAsistenciaDTO asistencia, int registradoPorId, int? maestroId)
+    public async Task Guardar(CreateAsistenciaDTO asistencia, int registradoPorId, int? maestroId)
     {
-        _actividadService.ValidarAcceso(asistencia.ActividadId, maestroId);
+        await _actividadService.ValidarAcceso(asistencia.ActividadId, maestroId);
         ValidarEstado(asistencia.Estado);
-        ValidarFecha(asistencia.ActividadId, asistencia.Fecha);
-        ValidarParticipacion(asistencia.ActividadId, asistencia.NinoId);
+        await ValidarFecha(asistencia.ActividadId, asistencia.Fecha);
+        await ValidarParticipacion(asistencia.ActividadId, asistencia.NinoId);
 
-        bool duplicada = _context.Asistencias.Any(x =>
+        bool duplicada = await _context.Asistencias.AnyAsync(x =>
             x.ActividadId == asistencia.ActividadId &&
             x.NinoId == asistencia.NinoId &&
             x.Fecha == asistencia.Fecha);
@@ -46,22 +46,22 @@ public class AsistenciaService : IAsistenciaService
         asistenciaModel.RegistradoPorId = registradoPorId;
 
         _context.Asistencias.Add(asistenciaModel);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ACTUALIZAR
-    public void Modificar(UpdateAsistenciaDTO asistencia, int? maestroId)
+    public async Task Modificar(UpdateAsistenciaDTO asistencia, int? maestroId)
     {
-        Asistencia? bdAsistencia = _context.Asistencias.FirstOrDefault(x => x.Id.Equals(asistencia.Id));
+        Asistencia? bdAsistencia = await _context.Asistencias.FirstOrDefaultAsync(x => x.Id.Equals(asistencia.Id));
         if (bdAsistencia == null)
         {
             throw (new RecursoNoEncontradoException("Asistencia no encontrada"));
         }
 
         // Antes cualquier sesión iniciada podía corregir cualquier registro por su Id.
-        _actividadService.ValidarAcceso(bdAsistencia.ActividadId, maestroId);
+        await _actividadService.ValidarAcceso(bdAsistencia.ActividadId, maestroId);
         ValidarEstado(asistencia.Estado);
-        ValidarFecha(bdAsistencia.ActividadId, asistencia.Fecha);
+        await ValidarFecha(bdAsistencia.ActividadId, asistencia.Fecha);
 
         bdAsistencia.Fecha = asistencia.Fecha;
         bdAsistencia.Estado = asistencia.Estado;
@@ -69,94 +69,94 @@ public class AsistenciaService : IAsistenciaService
         bdAsistencia.Observacion = asistencia.Observacion;
 
         _context.Asistencias.Update(bdAsistencia);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ELIMINAR
-    public void Eliminar(int id)
+    public async Task Eliminar(int id)
     {
-        Asistencia? asistencia = _context.Asistencias.FirstOrDefault(x => x.Id.Equals(id));
+        Asistencia? asistencia = await _context.Asistencias.FirstOrDefaultAsync(x => x.Id.Equals(id));
         if (asistencia == null)
         {
             throw (new RecursoNoEncontradoException("Asistencia no encontrada"));
         }
 
         _context.Asistencias.Remove(asistencia);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //OBTENER POR ID
-    public AsistenciaDTO ObtenerPorId(int id, int? maestroId)
+    public async Task<AsistenciaDTO> ObtenerPorId(int id, int? maestroId)
     {
-        Asistencia? asistencia = _context.Asistencias
+        Asistencia? asistencia = await _context.Asistencias
             .Include(x => x.Actividad)
             .Include(x => x.Nino)
             .Include(x => x.RegistradoPor)
-            .FirstOrDefault(x => x.Id.Equals(id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (asistencia == null)
         {
             throw (new RecursoNoEncontradoException("Asistencia no encontrada"));
         }
 
-        _actividadService.ValidarAcceso(asistencia.ActividadId, maestroId);
+        await _actividadService.ValidarAcceso(asistencia.ActividadId, maestroId);
 
         var dto = _mapper.Map<AsistenciaDTO>(asistencia);
         return dto;
     }
 
     //OBTENER TODOS
-    public List<AsistenciaDTO> ObtenerTodos()
+    public async Task<List<AsistenciaDTO>> ObtenerTodos()
     {
-        List<Asistencia> lstAsistencias = _context.Asistencias
+        List<Asistencia> lstAsistencias = await _context.Asistencias
             .Include(x => x.Actividad)
             .Include(x => x.Nino)
             .Include(x => x.RegistradoPor)
             .OrderByDescending(x => x.Fecha)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<AsistenciaDTO>>(lstAsistencias);
         return dto;
     }
 
     //OBTENER POR ACTIVIDAD
-    public List<AsistenciaDTO> ObtenerPorActividad(int actividadId, int? maestroId)
+    public async Task<List<AsistenciaDTO>> ObtenerPorActividad(int actividadId, int? maestroId)
     {
         // Se valida el acceso a la actividad, no niño por niño: quien puede usarla
         // ve su lista completa, igual que la Directora. Antes un maestro solo veía a
         // los niños de sus grupos, y si armaba una actividad con niños de otros
         // grupos, esos niños no le aparecían para pasar lista.
-        _actividadService.ValidarAcceso(actividadId, maestroId);
+        await _actividadService.ValidarAcceso(actividadId, maestroId);
 
-        List<Asistencia> lstAsistencias = _context.Asistencias
+        List<Asistencia> lstAsistencias = await _context.Asistencias
             .Include(x => x.Actividad)
             .Include(x => x.Nino)
             .Include(x => x.RegistradoPor)
             .Where(x => x.ActividadId == actividadId)
             .OrderByDescending(x => x.Fecha)
             .ThenBy(x => x.Nino.Apellidos)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<AsistenciaDTO>>(lstAsistencias);
         return dto;
     }
 
     //REGISTRAR POR ACTIVIDAD
-    public void RegistrarPorActividad(RegistrarAsistenciasDTO registro, int registradoPorId, int? maestroId)
+    public async Task RegistrarPorActividad(RegistrarAsistenciasDTO registro, int registradoPorId, int? maestroId)
     {
         // Antes no se comprobaba: cualquier maestro podía pasar lista en cualquier actividad.
-        _actividadService.ValidarAcceso(registro.ActividadId, maestroId);
+        await _actividadService.ValidarAcceso(registro.ActividadId, maestroId);
 
-        Actividad? bdActividad = _context.Actividades
+        Actividad? bdActividad = await _context.Actividades
             .Include(x => x.Actividad_Ninos)
-            .FirstOrDefault(x => x.Id.Equals(registro.ActividadId));
+            .FirstOrDefaultAsync(x => x.Id.Equals(registro.ActividadId));
 
         if (bdActividad == null)
         {
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
         }
 
-        ValidarFecha(registro.ActividadId, registro.Fecha);
+        await ValidarFecha(registro.ActividadId, registro.Fecha);
 
         if (registro.Asistencias.Count == 0)
         {
@@ -175,9 +175,9 @@ public class AsistenciaService : IAsistenciaService
             }
         }
 
-        List<Asistencia> existentes = _context.Asistencias
+        List<Asistencia> existentes = await _context.Asistencias
             .Where(x => x.ActividadId == registro.ActividadId && x.Fecha == registro.Fecha)
-            .ToList();
+            .ToListAsync();
 
         foreach (AsistenciaItemDTO item in registro.Asistencias)
         {
@@ -206,7 +206,7 @@ public class AsistenciaService : IAsistenciaService
             }
         }
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     private void ValidarEstado(string estado)
@@ -219,9 +219,9 @@ public class AsistenciaService : IAsistenciaService
     }
 
     /// <summary>Una sesión no puede registrarse antes de la fecha de su actividad.</summary>
-    private void ValidarFecha(int actividadId, DateOnly fecha)
+    private async Task ValidarFecha(int actividadId, DateOnly fecha)
     {
-        Actividad? bdActividad = _context.Actividades.FirstOrDefault(x => x.Id.Equals(actividadId));
+        Actividad? bdActividad = await _context.Actividades.FirstOrDefaultAsync(x => x.Id.Equals(actividadId));
         if (bdActividad == null)
         {
             throw (new RecursoNoEncontradoException("Actividad no encontrada"));
@@ -233,10 +233,10 @@ public class AsistenciaService : IAsistenciaService
         }
     }
 
-    private void ValidarParticipacion(int actividadId, int ninoId)
+    private async Task ValidarParticipacion(int actividadId, int ninoId)
     {
-        bool participa = _context.Actividad_Ninos
-            .Any(x => x.ActividadId == actividadId && x.NinoId == ninoId);
+        bool participa = await _context.Actividad_Ninos
+            .AnyAsync(x => x.ActividadId == actividadId && x.NinoId == ninoId);
 
         if (!participa)
         {

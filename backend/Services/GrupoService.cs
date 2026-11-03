@@ -26,9 +26,9 @@ public class GrupoService : IGrupoService
     }
 
     //CREAR
-    public void Guardar(CreateGrupoDTO grupo)
+    public async Task Guardar(CreateGrupoDTO grupo)
     {
-        List<int> maestrosElegidos = ValidarMaestros(grupo.MaestrosId);
+        List<int> maestrosElegidos = await ValidarMaestros(grupo.MaestrosId);
 
         Grupo grupoModel = _mapper.Map<Grupo>(grupo);
 
@@ -38,22 +38,22 @@ public class GrupoService : IGrupoService
             .ToList();
 
         _context.Grupos.Add(grupoModel);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ACTUALIZAR
-    public void Modificar(UpdateGrupoDTO grupo)
+    public async Task Modificar(UpdateGrupoDTO grupo)
     {
-        Grupo? bdGrupo = _context.Grupos
+        Grupo? bdGrupo = await _context.Grupos
             .Include(x => x.Grupo_Maestros)
-            .FirstOrDefault(x => x.Id.Equals(grupo.Id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(grupo.Id));
 
         if (bdGrupo == null)
         {
             throw (new RecursoNoEncontradoException("Grupo no encontrado"));
         }
 
-        List<int> maestrosElegidos = ValidarMaestros(grupo.MaestrosId);
+        List<int> maestrosElegidos = await ValidarMaestros(grupo.MaestrosId);
 
         bdGrupo.Nombre = grupo.Nombre;
         bdGrupo.Descripcion = grupo.Descripcion;
@@ -62,15 +62,15 @@ public class GrupoService : IGrupoService
         SincronizarMaestros(bdGrupo, maestrosElegidos);
 
         _context.Grupos.Update(bdGrupo);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ELIMINAR
-    public void Eliminar(int id)
+    public async Task Eliminar(int id)
     {
-        Grupo? grupo = _context.Grupos
+        Grupo? grupo = await _context.Grupos
             .Include(x => x.Ninos)
-            .FirstOrDefault(x => x.Id.Equals(id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (grupo == null)
         {
@@ -83,17 +83,17 @@ public class GrupoService : IGrupoService
         }
 
         _context.Grupos.Remove(grupo);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //OBTENER POR ID
-    public GrupoDTO ObtenerPorId(int id)
+    public async Task<GrupoDTO> ObtenerPorId(int id)
     {
-        Grupo? grupo = _context.Grupos
+        Grupo? grupo = await _context.Grupos
             .Include(x => x.Grupo_Maestros)
                 .ThenInclude(x => x.Perfil)
             .Include(x => x.Ninos)
-            .FirstOrDefault(x => x.Id.Equals(id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (grupo == null)
         {
@@ -105,14 +105,14 @@ public class GrupoService : IGrupoService
     }
 
     //OBTENER TODOS
-    public List<GrupoDTO> ObtenerTodos()
+    public async Task<List<GrupoDTO>> ObtenerTodos()
     {
-        List<Grupo> lstGrupos = _context.Grupos
+        List<Grupo> lstGrupos = await _context.Grupos
             .Include(x => x.Grupo_Maestros)
                 .ThenInclude(x => x.Perfil)
             .Include(x => x.Ninos)
             .OrderBy(x => x.Nombre)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<GrupoDTO>>(lstGrupos);
         return dto;
@@ -124,7 +124,7 @@ public class GrupoService : IGrupoService
     /// Comprueba que los maestros indicados existan y tengan rol Maestro.
     /// Devuelve la lista sin repetidos, lista para armar la tabla intermedia.
     /// </summary>
-    private List<int> ValidarMaestros(List<int> maestrosId)
+    private async Task<List<int>> ValidarMaestros(List<int> maestrosId)
     {
         List<int> sinRepetidos = maestrosId.Distinct().ToList();
 
@@ -134,9 +134,9 @@ public class GrupoService : IGrupoService
         }
 
         // Una sola consulta en lugar de una por maestro.
-        List<Perfil> lstPerfiles = _context.Perfiles
+        List<Perfil> lstPerfiles = await _context.Perfiles
             .Where(x => sinRepetidos.Contains(x.Id))
-            .ToList();
+            .ToListAsync();
 
         if (lstPerfiles.Count != sinRepetidos.Count)
         {
@@ -147,7 +147,7 @@ public class GrupoService : IGrupoService
         // es maestro, y después los filtros por rol no le mostraban nada.
         foreach (Perfil perfil in lstPerfiles)
         {
-            if (!TieneRolMaestro(perfil.UsuarioId))
+            if (!await TieneRolMaestro(perfil.UsuarioId))
             {
                 throw (new ReglaNegocioException(
                     $"{perfil.Nombre} {perfil.Apellido} no tiene el rol Maestro"));
@@ -157,16 +157,16 @@ public class GrupoService : IGrupoService
         return sinRepetidos;
     }
 
-    private bool TieneRolMaestro(string usuarioId)
+    private async Task<bool> TieneRolMaestro(string usuarioId)
     {
-        IdentityUser? bdUsuario = _userManager.FindByIdAsync(usuarioId).GetAwaiter().GetResult();
+        IdentityUser? bdUsuario = await _userManager.FindByIdAsync(usuarioId);
 
         if (bdUsuario == null)
         {
             return false;
         }
 
-        return _userManager.IsInRoleAsync(bdUsuario, "Maestro").GetAwaiter().GetResult();
+        return await _userManager.IsInRoleAsync(bdUsuario, "Maestro");
     }
 
     /// <summary>Deja la lista de maestros del grupo igual a la recibida.</summary>

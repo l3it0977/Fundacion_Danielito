@@ -20,21 +20,21 @@ public class VisitaService : IVisitaService
     }
 
     //CREAR
-    public void Guardar(CreateVisitaDTO visita, int realizadoPorId)
+    public async Task Guardar(CreateVisitaDTO visita, int realizadoPorId)
     {
-        ValidarNino(visita.NinoId);
+        await ValidarNino(visita.NinoId);
 
         Visita visitaModel = _mapper.Map<Visita>(visita);
         visitaModel.RealizadoPorId = realizadoPorId;
 
         _context.Visitas.Add(visitaModel);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ACTUALIZAR
-    public void Modificar(UpdateVisitaDTO visita)
+    public async Task Modificar(UpdateVisitaDTO visita)
     {
-        Visita? bdVisita = _context.Visitas.FirstOrDefault(x => x.Id.Equals(visita.Id));
+        Visita? bdVisita = await _context.Visitas.FirstOrDefaultAsync(x => x.Id.Equals(visita.Id));
         if (bdVisita == null)
         {
             throw (new RecursoNoEncontradoException("Visita no encontrada"));
@@ -46,29 +46,29 @@ public class VisitaService : IVisitaService
         bdVisita.Seguimiento = visita.Seguimiento;
 
         _context.Visitas.Update(bdVisita);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ELIMINAR
-    public void Eliminar(int id)
+    public async Task Eliminar(int id)
     {
-        Visita? visita = _context.Visitas.FirstOrDefault(x => x.Id.Equals(id));
+        Visita? visita = await _context.Visitas.FirstOrDefaultAsync(x => x.Id.Equals(id));
         if (visita == null)
         {
             throw (new RecursoNoEncontradoException("Visita no encontrada"));
         }
 
         _context.Visitas.Remove(visita);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //OBTENER POR ID
-    public VisitaDTO ObtenerPorId(int id)
+    public async Task<VisitaDTO> ObtenerPorId(int id)
     {
-        Visita? visita = _context.Visitas
+        Visita? visita = await _context.Visitas
             .Include(x => x.Nino)
             .Include(x => x.RealizadoPor)
-            .FirstOrDefault(x => x.Id.Equals(id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (visita == null)
         {
@@ -80,7 +80,7 @@ public class VisitaService : IVisitaService
     }
 
     //OBTENER TODOS
-    public List<VisitaDTO> ObtenerTodos(int? maestroId)
+    public async Task<List<VisitaDTO>> ObtenerTodos(int? maestroId)
     {
         IQueryable<Visita> consulta = _context.Visitas
             .Include(x => x.Nino)
@@ -92,17 +92,17 @@ public class VisitaService : IVisitaService
                 x.Nino.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
         }
 
-        List<Visita> lstVisitas = consulta
+        List<Visita> lstVisitas = await consulta
             .OrderByDescending(x => x.Fecha_Visita)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<VisitaDTO>>(lstVisitas);
         return dto;
     }
 
-    private void ValidarNino(int ninoId)
+    private async Task ValidarNino(int ninoId)
     {
-        Nino? bdNino = _context.Ninos.FirstOrDefault(x => x.Id.Equals(ninoId));
+        Nino? bdNino = await _context.Ninos.FirstOrDefaultAsync(x => x.Id.Equals(ninoId));
         if (bdNino == null)
         {
             throw (new ReglaNegocioException("El niño indicado no existe"));

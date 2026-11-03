@@ -20,28 +20,28 @@ public class NinoService : INinoService
     }
 
     //CREAR
-    public void Guardar(CreateNinoDTO nino)
+    public async Task Guardar(CreateNinoDTO nino)
     {
-        ValidarGrupo(nino.GrupoId);
-        ValidarCodigoUnico(nino.Codigo, null);
+        await ValidarGrupo(nino.GrupoId);
+        await ValidarCodigoUnico(nino.Codigo, null);
         ValidarCoordenadas(nino.Latitud, nino.Longitud);
 
         Nino ninoModel = _mapper.Map<Nino>(nino);
         _context.Ninos.Add(ninoModel);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ACTUALIZAR
-    public void Modificar(UpdateNinoDTO nino)
+    public async Task Modificar(UpdateNinoDTO nino)
     {
-        Nino? bdNino = _context.Ninos.FirstOrDefault(x => x.Id.Equals(nino.Id));
+        Nino? bdNino = await _context.Ninos.FirstOrDefaultAsync(x => x.Id.Equals(nino.Id));
         if (bdNino == null)
         {
             throw (new RecursoNoEncontradoException("Niño no encontrado"));
         }
 
-        ValidarGrupo(nino.GrupoId);
-        ValidarCodigoUnico(nino.Codigo, nino.Id);
+        await ValidarGrupo(nino.GrupoId);
+        await ValidarCodigoUnico(nino.Codigo, nino.Id);
         ValidarCoordenadas(nino.Latitud, nino.Longitud);
 
         bdNino.Codigo = nino.Codigo;
@@ -65,13 +65,13 @@ public class NinoService : INinoService
         bdNino.GrupoId = nino.GrupoId;
 
         _context.Ninos.Update(bdNino);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ELIMINAR
-    public void Eliminar(int id)
+    public async Task Eliminar(int id)
     {
-        Nino? nino = _context.Ninos.FirstOrDefault(x => x.Id.Equals(id));
+        Nino? nino = await _context.Ninos.FirstOrDefaultAsync(x => x.Id.Equals(id));
         if (nino == null)
         {
             throw (new RecursoNoEncontradoException("Niño no encontrado"));
@@ -80,9 +80,9 @@ public class NinoService : INinoService
         // Borrar a un niño con historial arrastraría sus asistencias y cambiaría los
         // reportes ya entregados. La base también lo impide (DeleteBehavior.Restrict),
         // pero aquí se avisa con un mensaje claro.
-        bool tieneHistorial = _context.Asistencias.Any(x => x.NinoId == id)
-            || _context.Visitas.Any(x => x.NinoId == id)
-            || _context.Actividad_Ninos.Any(x => x.NinoId == id);
+        bool tieneHistorial = await _context.Asistencias.AnyAsync(x => x.NinoId == id)
+            || await _context.Visitas.AnyAsync(x => x.NinoId == id)
+            || await _context.Actividad_Ninos.AnyAsync(x => x.NinoId == id);
 
         if (tieneHistorial)
         {
@@ -92,13 +92,13 @@ public class NinoService : INinoService
         }
 
         _context.Ninos.Remove(nino);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //ACTIVAR O DESACTIVAR
-    public void CambiarEstado(CambiarEstadoNinoDTO cambio)
+    public async Task CambiarEstado(CambiarEstadoNinoDTO cambio)
     {
-        Nino? bdNino = _context.Ninos.FirstOrDefault(x => x.Id.Equals(cambio.NinoId));
+        Nino? bdNino = await _context.Ninos.FirstOrDefaultAsync(x => x.Id.Equals(cambio.NinoId));
         if (bdNino == null)
         {
             throw (new RecursoNoEncontradoException("Niño no encontrado"));
@@ -107,17 +107,17 @@ public class NinoService : INinoService
         bdNino.Activo = cambio.Activo;
 
         _context.Ninos.Update(bdNino);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     //OBTENER POR ID
-    public NinoDTO ObtenerPorId(int id, int? maestroId)
+    public async Task<NinoDTO> ObtenerPorId(int id, int? maestroId)
     {
-        Nino? nino = _context.Ninos
+        Nino? nino = await _context.Ninos
             .Include(x => x.Grupo)
                 .ThenInclude(x => x.Grupo_Maestros)
                     .ThenInclude(x => x.Perfil)
-            .FirstOrDefault(x => x.Id.Equals(id));
+            .FirstOrDefaultAsync(x => x.Id.Equals(id));
 
         if (nino == null)
         {
@@ -135,7 +135,7 @@ public class NinoService : INinoService
     }
 
     //OBTENER TODOS
-    public List<NinoDTO> ObtenerTodos(int? maestroId)
+    public async Task<List<NinoDTO>> ObtenerTodos(int? maestroId)
     {
         IQueryable<Nino> consulta = _context.Ninos
             .Include(x => x.Grupo)
@@ -148,27 +148,27 @@ public class NinoService : INinoService
                 x.Grupo.Grupo_Maestros.Any(gm => gm.PerfilId == maestroId));
         }
 
-        List<Nino> lstNinos = consulta
+        List<Nino> lstNinos = await consulta
             .OrderBy(x => x.Apellidos)
             .ThenBy(x => x.Nombres)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<NinoDTO>>(lstNinos);
         return dto;
     }
 
     //OBTENER PARA SELECCION
-    public List<NinoSeleccionDTO> ObtenerParaSeleccion()
+    public async Task<List<NinoSeleccionDTO>> ObtenerParaSeleccion()
     {
         // Sin filtro por maestro: al armar una actividad se puede elegir a cualquier
         // niño. Devuelve solo nombre, código y grupo, no la ficha completa.
-        List<Nino> lstNinos = _context.Ninos
+        List<Nino> lstNinos = await _context.Ninos
             .Include(x => x.Grupo)
             .Where(x => x.Activo)
             .OrderBy(x => x.Grupo.Nombre)
             .ThenBy(x => x.Apellidos)
             .ThenBy(x => x.Nombres)
-            .ToList();
+            .ToListAsync();
 
         var dto = _mapper.Map<List<NinoSeleccionDTO>>(lstNinos);
         return dto;
@@ -198,18 +198,18 @@ public class NinoService : INinoService
         }
     }
 
-    private void ValidarGrupo(int grupoId)
+    private async Task ValidarGrupo(int grupoId)
     {
-        Grupo? bdGrupo = _context.Grupos.FirstOrDefault(x => x.Id.Equals(grupoId));
+        Grupo? bdGrupo = await _context.Grupos.FirstOrDefaultAsync(x => x.Id.Equals(grupoId));
         if (bdGrupo == null)
         {
             throw (new ReglaNegocioException("El grupo indicado no existe"));
         }
     }
 
-    private void ValidarCodigoUnico(string codigo, int? idActual)
+    private async Task ValidarCodigoUnico(string codigo, int? idActual)
     {
-        bool existe = _context.Ninos.Any(x => x.Codigo.Equals(codigo) && x.Id != idActual);
+        bool existe = await _context.Ninos.AnyAsync(x => x.Codigo.Equals(codigo) && x.Id != idActual);
         if (existe)
         {
             throw (new ReglaNegocioException($"Ya existe un niño con el código '{codigo}'"));

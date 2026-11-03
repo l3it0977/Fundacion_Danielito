@@ -47,109 +47,109 @@ public class PermisosDeMaestroTests : IDisposable
     //ACTIVIDADES
 
     [Fact]
-    public void ValidarAcceso_QuienLaCreo_Puede()
+    public async Task ValidarAcceso_QuienLaCreo_Puede()
     {
-        _actividades.ValidarAcceso(_actividadDeA.Id, _ana.Id);
+        await _actividades.ValidarAcceso(_actividadDeA.Id, _ana.Id);
     }
 
     [Fact]
-    public void ValidarAcceso_MaestroConNinosDeSuGrupoEnLaActividad_Puede()
+    public async Task ValidarAcceso_MaestroConNinosDeSuGrupoEnLaActividad_Puede()
     {
         // Beto no la creó, pero la actividad incluye a un niño de su grupo.
         var actividadMixta = _bd.CrearActividad(_ana, Fecha, _ninoDeA, _ninoDeB);
 
-        _actividades.ValidarAcceso(actividadMixta.Id, _beto.Id);
+        await _actividades.ValidarAcceso(actividadMixta.Id, _beto.Id);
     }
 
     [Fact]
-    public void ValidarAcceso_MaestroAjeno_LanzaNoAutorizado()
+    public async Task ValidarAcceso_MaestroAjeno_LanzaNoAutorizado()
     {
-        Assert.Throws<UnauthorizedAccessException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _actividades.ValidarAcceso(_actividadDeA.Id, _beto.Id));
     }
 
     [Fact]
-    public void ValidarAcceso_SinFiltroDeMaestro_PuedeLaDireccion()
+    public async Task ValidarAcceso_SinFiltroDeMaestro_PuedeLaDireccion()
     {
-        _actividades.ValidarAcceso(_actividadDeA.Id, null);
+        await _actividades.ValidarAcceso(_actividadDeA.Id, null);
     }
 
     [Fact]
-    public void ValidarAcceso_ActividadInexistente_LanzaNoEncontrado()
+    public async Task ValidarAcceso_ActividadInexistente_LanzaNoEncontrado()
     {
-        Assert.Throws<RecursoNoEncontradoException>(() => _actividades.ValidarAcceso(999, _ana.Id));
+        await Assert.ThrowsAsync<RecursoNoEncontradoException>(() => _actividades.ValidarAcceso(999, _ana.Id));
     }
 
     //NIÑOS
 
     [Fact]
-    public void ObtenerTodos_UnMaestroSoloVeLosNinosDeSusGrupos()
+    public async Task ObtenerTodos_UnMaestroSoloVeLosNinosDeSusGrupos()
     {
-        var visibles = _ninos.ObtenerTodos(_ana.Id);
+        var visibles = await _ninos.ObtenerTodos(_ana.Id);
 
         Assert.Single(visibles);
         Assert.Equal(_ninoDeA.Id, visibles[0].Id);
     }
 
     [Fact]
-    public void ObtenerTodos_LaDireccionVeATodos()
+    public async Task ObtenerTodos_LaDireccionVeATodos()
     {
-        Assert.Equal(2, _ninos.ObtenerTodos(null).Count);
+        Assert.Equal(2, (await _ninos.ObtenerTodos(null)).Count);
     }
 
     [Fact]
-    public void ObtenerPorId_NinoDeOtroGrupo_LanzaNoAutorizado()
+    public async Task ObtenerPorId_NinoDeOtroGrupo_LanzaNoAutorizado()
     {
-        Assert.Throws<UnauthorizedAccessException>(() => _ninos.ObtenerPorId(_ninoDeB.Id, _ana.Id));
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _ninos.ObtenerPorId(_ninoDeB.Id, _ana.Id));
     }
 
     //ASISTENCIA
 
     [Fact]
-    public void RegistrarPorActividad_MaestroAjeno_LanzaNoAutorizadoYNoGuardaNada()
+    public async Task RegistrarPorActividad_MaestroAjeno_LanzaNoAutorizadoYNoGuardaNada()
     {
         var registro = NuevoRegistro(_actividadDeA, Fecha, (_ninoDeA, Asistencia.EstadoPresente));
 
-        Assert.Throws<UnauthorizedAccessException>(() =>
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _asistencias.RegistrarPorActividad(registro, _beto.Id, _beto.Id));
 
         Assert.Equal(0, _bd.Context.Asistencias.Count());
     }
 
     [Fact]
-    public void RegistrarPorActividad_NinoQueNoParticipa_SeRechaza()
+    public async Task RegistrarPorActividad_NinoQueNoParticipa_SeRechaza()
     {
         var registro = NuevoRegistro(_actividadDeA, Fecha, (_ninoDeB, Asistencia.EstadoPresente));
 
-        Assert.Throws<ReglaNegocioException>(() =>
+        await Assert.ThrowsAsync<ReglaNegocioException>(() =>
             _asistencias.RegistrarPorActividad(registro, _ana.Id, _ana.Id));
     }
 
     [Fact]
-    public void RegistrarPorActividad_EstadoInvalido_SeRechaza()
+    public async Task RegistrarPorActividad_EstadoInvalido_SeRechaza()
     {
         var registro = NuevoRegistro(_actividadDeA, Fecha, (_ninoDeA, "quizas"));
 
-        Assert.Throws<ReglaNegocioException>(() =>
+        await Assert.ThrowsAsync<ReglaNegocioException>(() =>
             _asistencias.RegistrarPorActividad(registro, _ana.Id, _ana.Id));
     }
 
     [Fact]
-    public void RegistrarPorActividad_FechaAnteriorALaActividad_SeRechaza()
+    public async Task RegistrarPorActividad_FechaAnteriorALaActividad_SeRechaza()
     {
         var registro = NuevoRegistro(_actividadDeA, Fecha.AddDays(-1), (_ninoDeA, Asistencia.EstadoPresente));
 
-        Assert.Throws<ReglaNegocioException>(() =>
+        await Assert.ThrowsAsync<ReglaNegocioException>(() =>
             _asistencias.RegistrarPorActividad(registro, _ana.Id, _ana.Id));
     }
 
     [Fact]
-    public void RegistrarPorActividad_EnviarDosVecesLaMismaLista_ActualizaSinDuplicar()
+    public async Task RegistrarPorActividad_EnviarDosVecesLaMismaLista_ActualizaSinDuplicar()
     {
-        _asistencias.RegistrarPorActividad(
+        await _asistencias.RegistrarPorActividad(
             NuevoRegistro(_actividadDeA, Fecha, (_ninoDeA, Asistencia.EstadoAusente)), _ana.Id, _ana.Id);
 
-        _asistencias.RegistrarPorActividad(
+        await _asistencias.RegistrarPorActividad(
             NuevoRegistro(_actividadDeA, Fecha, (_ninoDeA, Asistencia.EstadoPresente)), _ana.Id, _ana.Id);
 
         var guardadas = _bd.Context.Asistencias.ToList();
@@ -158,11 +158,11 @@ public class PermisosDeMaestroTests : IDisposable
     }
 
     [Fact]
-    public void RegistrarPorActividad_ListaVacia_SeRechaza()
+    public async Task RegistrarPorActividad_ListaVacia_SeRechaza()
     {
         var registro = NuevoRegistro(_actividadDeA, Fecha);
 
-        Assert.Throws<ReglaNegocioException>(() =>
+        await Assert.ThrowsAsync<ReglaNegocioException>(() =>
             _asistencias.RegistrarPorActividad(registro, _ana.Id, _ana.Id));
     }
 
