@@ -228,21 +228,29 @@ public class ReporteService : IReporteService
             consulta = consulta.Where(x => x.Actividad_Ninos.Any(an => an.Nino.GrupoId == idGrupo));
         }
 
-        // Con un grupo elegido, solo cuentan los niños de ese grupo.
+        // Con un grupo elegido, solo cuentan los niños de ese grupo. Los grupos y el conteo
+        // se arman en memoria: son pocas actividades y así la consulta no depende de
+        // subconsultas correlacionadas que no todos los proveedores de base traducen.
         var actividades = consulta
+            .Include(x => x.Actividad_Ninos)
+                .ThenInclude(x => x.Nino)
+                    .ThenInclude(x => x.Grupo)
             .OrderBy(x => x.Fecha_Actividad)
-            .Select(x => new
+            .ToList()
+            .Select(x =>
             {
-                x.Nombre,
-                x.Tipo,
-                Fecha = x.Fecha_Actividad,
-                Grupos = x.Actividad_Ninos
+                var participantes = x.Actividad_Ninos
                     .Where(an => !filtrarGrupo || an.Nino.GrupoId == idGrupo)
-                    .Select(an => an.Nino.Grupo.Nombre)
-                    .Distinct()
-                    .ToList(),
-                Participantes = x.Actividad_Ninos
-                    .Count(an => !filtrarGrupo || an.Nino.GrupoId == idGrupo)
+                    .ToList();
+
+                return new
+                {
+                    x.Nombre,
+                    x.Tipo,
+                    Fecha = x.Fecha_Actividad,
+                    Grupos = participantes.Select(an => an.Nino.Grupo.Nombre).Distinct().ToList(),
+                    Participantes = participantes.Count
+                };
             })
             .ToList();
 
@@ -775,7 +783,7 @@ public class ReporteService : IReporteService
     private sealed record FilaResumen(string Etiqueta, int? Ninos, Totales Datos);
 
     /// <summary>Conteo por estado. Solo las sesiones con lista pasada entran en el porcentaje.</summary>
-    private sealed record Totales(int Presentes, int Ausentes, int Justificados, int Pendientes)
+    internal sealed record Totales(int Presentes, int Ausentes, int Justificados, int Pendientes)
     {
         public int Registradas => Presentes + Ausentes + Justificados;
 

@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Deja que el proyecto de pruebas vea los tipos internos (por ejemplo, los totales de un reporte). -->
+    <InternalsVisibleTo Include="SISTEMADANIELITO.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Logo de la fundación para la plantilla de los reportes en PDF. -->
     <None Update="Recursos\logo-danielito.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

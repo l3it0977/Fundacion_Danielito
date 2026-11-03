@@ -9,6 +9,7 @@ Sistema de seguimiento de niños, grupos, actividades y asistencia de la Fundaci
 |---|---|
 | `backend/` | API REST en ASP.NET Core 10, con Entity Framework Core, Identity y JWT |
 | `frontend/` | Interfaz web en React 19 con TypeScript y Vite |
+| `backend.Tests/` | Pruebas automatizadas del backend (xUnit + SQLite en memoria) |
 
 ## Requisitos
 
@@ -58,6 +59,21 @@ La interfaz queda en `http://localhost:5173`.
 
 La dirección de la API se configura en `frontend/.env` mediante `VITE_API_URL`. Ese mismo
 origen debe estar autorizado en `Cors:OrigenesPermitidos` dentro de `backend/appsettings.json`.
+
+## Pruebas
+
+```bash
+# Backend: permisos de los maestros, asistencia, reportes, baja de niños y validación de cuentas.
+# Si el servidor está corriendo, deténlo antes: Windows bloquea los archivos que está usando.
+dotnet test backend.Tests
+
+# Frontend: lectura de las coordenadas del mapa.
+cd frontend
+npm test
+```
+
+Las pruebas del backend usan SQLite en memoria, así que no tocan tu base de datos ni necesitan
+PostgreSQL.
 
 ## Migrar a Supabase
 

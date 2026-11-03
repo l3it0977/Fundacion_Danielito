@@ -1,6 +1,8 @@
 # ---------- Backend (.NET) ----------
 /backend/bin
 /backend/obj
+/backend.Tests/bin
+/backend.Tests/obj
 # La configuración local va en user-secrets, fuera del repositorio.
 /backend/appsettings.*.local.json
 

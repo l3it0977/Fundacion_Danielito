@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ClipboardPaste, MapPin } from 'lucide-react';
+import { interpretarCoordenadas } from '../../utilidades/coordenadas';
 import { Boton } from './Boton';
 import './CampoCoordenadas.css';
 
@@ -25,51 +26,23 @@ export function CampoCoordenadas({ latitud, longitud, alCambiar }: Props) {
     }
   }, [latitud, longitud]);
 
-  /**
-   * Interpreta el texto pegado. Separa por coma o por espacios, de modo que
-   * sirva tanto "-17.78, -63.18" como "-17.78 -63.18".
-   */
   function aplicarTextoPegado(texto: string) {
     setTextoPegado(texto);
     setError('');
 
-    const limpio = texto.trim();
+    const lectura = interpretarCoordenadas(texto);
 
-    if (limpio === '') {
-      alCambiar(null, null);
-      return;
+    switch (lectura.tipo) {
+      case 'vacia':
+        alCambiar(null, null);
+        break;
+      case 'error':
+        setError(lectura.mensaje);
+        break;
+      case 'valida':
+        alCambiar(lectura.latitud, lectura.longitud);
+        break;
     }
-
-    const partes = limpio
-      .split(/[,\s]+/)
-      .map((parte) => parte.trim())
-      .filter((parte) => parte !== '');
-
-    if (partes.length !== 2) {
-      setError('Escribe dos números separados por coma. Ejemplo: -17.783, -63.182');
-      return;
-    }
-
-    const latitudLeida = Number(partes[0]);
-    const longitudLeida = Number(partes[1]);
-
-    if (Number.isNaN(latitudLeida) || Number.isNaN(longitudLeida)) {
-      setError('Alguno de los dos valores no es un número.');
-      return;
-    }
-
-    // Los mismos límites que valida el servidor, para avisar antes de enviar.
-    if (latitudLeida < -90 || latitudLeida > 90) {
-      setError('La latitud debe estar entre -90 y 90.');
-      return;
-    }
-
-    if (longitudLeida < -180 || longitudLeida > 180) {
-      setError('La longitud debe estar entre -180 y 180.');
-      return;
-    }
-
-    alCambiar(latitudLeida, longitudLeida);
   }
 
   /** Lee el portapapeles cuando el navegador lo permite. */
