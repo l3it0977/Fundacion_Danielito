@@ -5,6 +5,8 @@ import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';
 import { Aviso } from '../componentes/comunes/Aviso';
+import '../componentes/comunes/Campos.css';
+import './Listados.css';
 import './Importar.css';
 
 interface Resultado {

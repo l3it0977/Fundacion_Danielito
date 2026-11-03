@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { servicioActividades, servicioAsistencias, servicioNinos } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { usePermisosActividad } from '../hooks/usePermisosActividad';
 import { fechaLocalDeHoy, formatearFecha, soloFecha } from '../utilidades/fechas';
+import { fechaConListaPendiente, marcasGuardadasDelDia } from '../utilidades/asistencia';
+import type { MarcaAsistencia } from '../utilidades/asistencia';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';
@@ -12,7 +14,8 @@ import { Aviso } from '../componentes/comunes/Aviso';
 import { Cargando, MensajeError, SinDatos } from '../componentes/comunes/Estados';
 import { CampoTexto } from '../componentes/comunes/Campos';
 import { Insignia } from '../componentes/comunes/Insignia';
-import type { EstadoAsistencia } from '../tipos';
+import type { Asistencia as RegistroAsistencia, EstadoAsistencia } from '../tipos';
+import './Listados.css';
 import './Asistencia.css';
 
 const ESTADOS: { valor: EstadoAsistencia; etiqueta: string }[] = [
@@ -20,12 +23,6 @@ const ESTADOS: { valor: EstadoAsistencia; etiqueta: string }[] = [
   { valor: 'ausente', etiqueta: 'Ausente' },
   { valor: 'justificado', etiqueta: 'Justificado' },
 ];
-
-/** Lo marcado para cada niño antes de guardar. */
-interface MarcaAsistencia {
-  estado: EstadoAsistencia;
-  motivo: string;
-}
 
 export function Asistencia() {
   const { id } = useParams();
@@ -56,7 +53,13 @@ export function Asistencia() {
 
   // Evita que la fecha se vuelva a elegir sola cada vez que se recargan los registros:
   // solo se propone al entrar; después manda lo que la persona elija.
-  const fechaYaPropuesta = useRef(false);
+  const [fechaYaPropuesta, setFechaYaPropuesta] = useState(false);
+
+  // De qué registros y de qué fecha vienen las marcas que se ven ahora.
+  const [origenDeMarcas, setOrigenDeMarcas] = useState<{
+    registradas: RegistroAsistencia[];
+    fecha: string;
+  } | null>(null);
 
   // Solo los niños asignados a la actividad pueden tener asistencia.
   const participantes = useMemo(() => {
@@ -74,43 +77,24 @@ export function Asistencia() {
     Si esa lista sigue pendiente, se abre en ese día para que aparezca armada; si
     no hay nada pendiente, se abre en hoy, que es lo habitual para una sesión nueva.
   */
-  useEffect(() => {
-    if (fechaYaPropuesta.current || !registradas) {
-      return;
+  // Se resuelve durante el render y no en un efecto: así la pantalla nunca llega a pintar
+  // la fecha equivocada con las marcas de otro día.
+  if (registradas && !fechaYaPropuesta) {
+    setFechaYaPropuesta(true);
+
+    const propuesta = fechaConListaPendiente(registradas);
+    if (propuesta) {
+      setFecha(propuesta);
     }
-
-    const fechasConPendientes = registradas
-      .filter((registro) => registro.estado === 'pendiente')
-      .map((registro) => soloFecha(registro.fecha))
-      .sort();
-
-    if (fechasConPendientes.length > 0) {
-      setFecha(fechasConPendientes[0]);
-    }
-
-    fechaYaPropuesta.current = true;
-  }, [registradas]);
+  }
 
   // La lista llega armada desde el backend al crear la actividad: todos los
   // participantes aparecen ya en estado pendiente. Al cambiar de fecha se cargan
   // los estados guardados de ese día, para corregir sin volver a marcar todo.
-  useEffect(() => {
-    if (!registradas) {
-      return;
-    }
-
-    const delDia = registradas.filter((registro) => soloFecha(registro.fecha) === fecha);
-
-    const marcasDelDia: Record<number, MarcaAsistencia> = {};
-    for (const registro of delDia) {
-      marcasDelDia[registro.ninoId] = {
-        estado: registro.estado,
-        motivo: registro.motivo_Justificacion ?? '',
-      };
-    }
-
-    setMarcas(marcasDelDia);
-  }, [registradas, fecha]);
+  if (registradas && (origenDeMarcas?.registradas !== registradas || origenDeMarcas.fecha !== fecha)) {
+    setOrigenDeMarcas({ registradas, fecha });
+    setMarcas(marcasGuardadasDelDia(registradas, fecha));
+  }
 
   function marcar(ninoId: number, estado: EstadoAsistencia) {
     setMarcas((anteriores) => ({

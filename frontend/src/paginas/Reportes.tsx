@@ -23,11 +23,10 @@ function aniosDisponibles(): number[] {
 export function Reportes() {
   const { datos: grupos } = useCargarDatos(servicioGrupos.listar);
 
-  const hoy = new Date();
   // Cadena vacía = "todos": el servidor la entiende como sin filtro.
   const [grupoId, setGrupoId] = useState('');
-  const [mes, setMes] = useState(String(hoy.getMonth() + 1));
-  const [anio, setAnio] = useState(String(hoy.getFullYear()));
+  const [mes, setMes] = useState(() => String(new Date().getMonth() + 1));
+  const [anio, setAnio] = useState(() => String(new Date().getFullYear()));
 
   const [aviso, setAviso] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
   const [descargando, setDescargando] = useState('');
@@ -60,7 +59,7 @@ export function Reportes() {
     <div className="pagina">
       <EncabezadoPagina
         titulo="Reportes"
-        descripcion="Los archivos se generan en PDF con la plantilla de la fundación y se descargan al momento."
+        descripcion="Los archivos se generan con la plantilla de la fundación y se descargan al momento."
       />
 
       {aviso && (

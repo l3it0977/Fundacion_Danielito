@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { servicioActividades, servicioNinos } from '../api/servicios';
@@ -38,12 +38,12 @@ export function AsignarNinos() {
   const [aviso, setAviso] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  // Al cargar la actividad se marcan los niños que ya participaban.
-  useEffect(() => {
-    if (actividad) {
-      setSeleccionados(actividad.ninos);
-    }
-  }, [actividad]);
+  // Al cargar la actividad (y al recargarla tras guardar) se marcan los niños que ya participaban.
+  const [actividadCopiada, setActividadCopiada] = useState<typeof actividad>(null);
+  if (actividad && actividad !== actividadCopiada) {
+    setActividadCopiada(actividad);
+    setSeleccionados(actividad.ninos);
+  }
 
   async function guardar() {
     setGuardando(true);

@@ -1,0 +1,146 @@
+/*
+  Piezas visuales que usan varias pantallas: la tabla (que en móvil se vuelve fichas) y las
+  mini-cifras. Se cargan junto con el diseño base (componentes/layout/Diseno.tsx) porque las
+  pantallas se descargan por separado: si estas reglas vivieran en el CSS de una sola pantalla,
+  las demás se verían sin estilo hasta haber visitado aquella.
+*/
+
+/* ---------- Tablas ---------- */
+
+.tabla-contenedor {
+  /* Permite desplazar la tabla a lo ancho sin romper el resto de la página. */
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-base);
+}
+
+.tabla th {
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--teal-oscuro);
+  color: var(--blanco);
+
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: var(--espacio-3) var(--espacio-4);
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr {
+  transition: background-color var(--transicion);
+}
+
+.tabla tbody tr:hover {
+  background: var(--fondo-suave);
+}
+
+/*
+  En móvil la tabla se reorganiza como fichas: cada fila pasa a ser un bloque y
+  cada celda muestra su encabezado al costado. Así se evita el desplazamiento
+  horizontal, que en pantallas chicas es incómodo de usar.
+*/
+@media (max-width: 680px) {
+  .tabla thead {
+    /* Oculto visualmente pero disponible para lectores de pantalla. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .tabla,
+  .tabla tbody,
+  .tabla tr,
+  .tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla tr {
+    margin-bottom: var(--espacio-3);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-medio);
+    overflow: hidden;
+  }
+
+  .tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-4);
+    text-align: right;
+  }
+
+  /* El nombre de la columna se toma del atributo data-etiqueta de cada celda. */
+  .tabla td::before {
+    content: attr(data-etiqueta);
+    font-size: var(--texto-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--texto-medio);
+    text-align: left;
+  }
+}
+
+/* ---------- Mini-cifras ---------- */
+
+.rejilla-mini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--espacio-3);
+}
+
+.mini-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-1);
+
+  padding: var(--espacio-4);
+  background: var(--fondo-suave);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-medio);
+  text-align: center;
+}
+
+.mini-cifra__valor {
+  font-size: var(--texto-xl);
+  font-weight: 800;
+  color: var(--teal-oscuro);
+}
+
+.mini-cifra__etiqueta {
+  font-size: var(--texto-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--texto-medio);
+}
+
+.mini-cifra--exito .mini-cifra__valor {
+  color: var(--exito);
+}
+
+.mini-cifra--error .mini-cifra__valor {
+  color: var(--error);
+}
+
+.mini-cifra--advertencia .mini-cifra__valor {
+  color: var(--advertencia);
+}

@@ -4,7 +4,7 @@ import { servicioPanel } from '../api/servicios';
 import { TarjetaResumen } from '../componentes/comunes/TarjetaResumen';
 import { Panel } from '../componentes/comunes/Panel';
 import { Cargando, MensajeError, SinDatos } from '../componentes/comunes/Estados';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import type { PanelMaestro as DatosPanel } from '../tipos';
 import './Paneles.css';
 

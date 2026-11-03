@@ -4,7 +4,7 @@ import { ChevronDown, Eye, Pencil, Plus, Search, Trash2, UserCheck, UserX } from
 import { servicioNinos } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { useRetraso } from '../hooks/useRetraso';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Boton } from '../componentes/comunes/Boton';
 import { Aviso } from '../componentes/comunes/Aviso';

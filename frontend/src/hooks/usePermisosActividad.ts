@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import type { Actividad } from '../tipos';
 
 /**

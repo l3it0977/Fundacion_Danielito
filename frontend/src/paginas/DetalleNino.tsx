@@ -3,7 +3,7 @@ import { ArrowLeft, Pencil } from 'lucide-react';
 import { servicioNinos } from '../api/servicios';
 import { formatearFecha } from '../utilidades/fechas';
 import { useCargarDatos } from '../hooks/useCargarDatos';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';

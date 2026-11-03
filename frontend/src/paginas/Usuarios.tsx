@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import { servicioUsuarios } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import { EncabezadoPagina } from '../componentes/comunes/EncabezadoPagina';
 import { Panel } from '../componentes/comunes/Panel';
 import { Boton } from '../componentes/comunes/Boton';

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useAutenticacion } from '../../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../../contextos/useAutenticacion';
 import type { NombreRol } from '../../tipos';
 import './BarraSuperior.css';
 
@@ -19,16 +19,32 @@ interface Props {
   subtitulo: string;
 }
 
+/**
+ * Fecha de hoy para el encabezado. Solo la primera letra va en mayúscula: dejarlo en manos
+ * de CSS con "capitalize" escribía "Lunes, 28 De Septiembre De 2026", con los "de" en mayúscula.
+ */
+function fechaDeHoyEnTexto(): string {
+  const enMinusculas = new Date().toLocaleDateString('es-BO', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return enMinusculas.charAt(0).toUpperCase() + enMinusculas.slice(1);
+}
+
 export function BarraSuperior({ enlaces, subtitulo }: Props) {
   const { usuario, cerrarSesion } = useAutenticacion();
-  const [menuAbierto, setMenuAbierto] = useState(false);
   const ubicacion = useLocation();
-  const botonMenu = useRef<HTMLButtonElement>(null);
 
-  // Al navegar se cierra el menú: en móvil quedaría tapando la pantalla nueva.
-  useEffect(() => {
-    setMenuAbierto(false);
-  }, [ubicacion.pathname]);
+  // Se guarda en qué ruta se abrió el menú: al navegar a otra queda cerrado solo, sin efectos.
+  // En móvil, si no, taparía la pantalla nueva.
+  const [fechaDeHoy] = useState(fechaDeHoyEnTexto);
+  const [rutaDelMenu, setRutaDelMenu] = useState<string | null>(null);
+  const menuAbierto = rutaDelMenu === ubicacion.pathname;
+  const setMenuAbierto = (abrir: boolean) => setRutaDelMenu(abrir ? ubicacion.pathname : null);
+  const botonMenu = useRef<HTMLButtonElement>(null);
 
   // Escape cierra el menú y devuelve el foco al botón, para no perderlo al navegar con teclado.
   useEffect(() => {
@@ -38,7 +54,7 @@ export function BarraSuperior({ enlaces, subtitulo }: Props) {
 
     const alPresionarTecla = (evento: KeyboardEvent) => {
       if (evento.key === 'Escape') {
-        setMenuAbierto(false);
+        setRutaDelMenu(null);
         botonMenu.current?.focus();
       }
     };
@@ -56,17 +72,6 @@ export function BarraSuperior({ enlaces, subtitulo }: Props) {
   );
 
   const iniciales = `${usuario.nombre.charAt(0)}${usuario.apellido.charAt(0)}`.toUpperCase();
-
-  const fechaEnMinusculas = new Date().toLocaleDateString('es-BO', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-
-  // Solo la primera letra va en mayúscula. Dejarlo en manos de CSS con "capitalize"
-  // escribía "Lunes, 28 De Septiembre De 2026", con los "de" en mayúscula.
-  const fechaDeHoy = fechaEnMinusculas.charAt(0).toUpperCase() + fechaEnMinusculas.slice(1);
 
   return (
     <>
@@ -92,7 +97,7 @@ export function BarraSuperior({ enlaces, subtitulo }: Props) {
             ref={botonMenu}
             type="button"
             className="barra__boton-menu"
-            onClick={() => setMenuAbierto((abierto) => !abierto)}
+            onClick={() => setMenuAbierto(!menuAbierto)}
             aria-expanded={menuAbierto}
             aria-controls="menu-principal"
           >

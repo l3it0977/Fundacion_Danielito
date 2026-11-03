@@ -3,7 +3,7 @@
   y qué rol tiene, y cierra la sesión cuando expira.
 */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   borrarToken,
@@ -13,16 +13,7 @@ import {
 } from '../api/cliente';
 import { servicioAutenticacion } from '../api/servicios';
 import type { NombreRol, UsuarioAutenticado } from '../tipos';
-
-interface ValorContexto {
-  usuario: UsuarioAutenticado | null;
-  cargando: boolean;
-  iniciarSesion: (email: string, password: string) => Promise<void>;
-  cerrarSesion: () => void;
-  tieneRol: (...roles: NombreRol[]) => boolean;
-}
-
-const ContextoAutenticacion = createContext<ValorContexto | null>(null);
+import { ContextoAutenticacion } from './useAutenticacion';
 
 /**
  * Lee el contenido del token sin validar la firma.
@@ -66,30 +57,34 @@ function tokenSigueVigente(usuario: UsuarioAutenticado): boolean {
   return usuario.expiracion > Date.now();
 }
 
+/**
+ * Recupera la sesión que quedó guardada, si el token sigue vigente. Se lee en el estado inicial
+ * (de forma síncrona) y no en un efecto: así la primera pantalla ya sabe si hay sesión y nadie
+ * ve un parpadeo del login antes de entrar.
+ */
+function recuperarSesion(): UsuarioAutenticado | null {
+  const token = leerToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const datos = leerDatosDelToken(token);
+
+  if (datos && tokenSigueVigente(datos)) {
+    return datos;
+  }
+
+  borrarToken();
+  return null;
+}
+
 export function ProveedorAutenticacion({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(recuperarSesion);
 
   const cerrarSesion = useCallback(() => {
     borrarToken();
     setUsuario(null);
-  }, []);
-
-  // Al abrir la aplicación se recupera la sesión previa, si el token sigue vigente.
-  useEffect(() => {
-    const token = leerToken();
-
-    if (token) {
-      const datos = leerDatosDelToken(token);
-
-      if (datos && tokenSigueVigente(datos)) {
-        setUsuario(datos);
-      } else {
-        borrarToken();
-      }
-    }
-
-    setCargando(false);
   }, []);
 
   // El cliente de la API avisa cuando el backend responde 401.
@@ -104,12 +99,8 @@ export function ProveedorAutenticacion({ children }: { children: ReactNode }) {
       return;
     }
 
-    const milisegundosRestantes = usuario.expiracion - Date.now();
-
-    if (milisegundosRestantes <= 0) {
-      cerrarSesion();
-      return;
-    }
+    // Si ya venció, el temporizador de 0 ms la cierra enseguida.
+    const milisegundosRestantes = Math.max(0, usuario.expiracion - Date.now());
 
     const temporizador = setTimeout(cerrarSesion, milisegundosRestantes);
     return () => clearTimeout(temporizador);
@@ -135,21 +126,11 @@ export function ProveedorAutenticacion({ children }: { children: ReactNode }) {
   );
 
   const valor = useMemo(
-    () => ({ usuario, cargando, iniciarSesion, cerrarSesion, tieneRol }),
-    [usuario, cargando, iniciarSesion, cerrarSesion, tieneRol],
+    () => ({ usuario, iniciarSesion, cerrarSesion, tieneRol }),
+    [usuario, iniciarSesion, cerrarSesion, tieneRol],
   );
 
   return (
     <ContextoAutenticacion.Provider value={valor}>{children}</ContextoAutenticacion.Provider>
   );
-}
-
-export function useAutenticacion(): ValorContexto {
-  const contexto = useContext(ContextoAutenticacion);
-
-  if (!contexto) {
-    throw new Error('useAutenticacion debe usarse dentro de ProveedorAutenticacion');
-  }
-
-  return contexto;
 }

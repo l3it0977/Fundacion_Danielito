@@ -16,6 +16,16 @@ const ICONO_MARCADOR = L.divIcon({
   iconAnchor: [15, 42],
 });
 
+/*
+  Las teselas (las imágenes del mapa) salen de OpenStreetMap, que es gratis pero pide un uso
+  moderado. Si el sistema crece, se cambia de proveedor sin tocar el código: basta definir
+  VITE_TILES_URL (y VITE_TILES_ATTRIBUTION con el crédito que exija) en el .env.
+*/
+const URL_TESELAS: string =
+  import.meta.env.VITE_TILES_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+const ATRIBUCION_TESELAS: string = import.meta.env.VITE_TILES_ATTRIBUTION || '© OpenStreetMap';
+
 /** Plaza principal de Santa Cruz: punto de partida cuando no hay coordenadas. */
 const CENTRO_POR_DEFECTO: [number, number] = [-17.5147, -63.1678];
 
@@ -53,8 +63,8 @@ export function MapaUbicacion({ latitud, longitud, alCambiarUbicacion }: Props) 
     mapa.current = L.map(contenedor.current).setView(posicionInicial, 14);
     ultimaUbicacionDelMapa.current = { lat: posicionInicial[0], lng: posicionInicial[1] };
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
+    L.tileLayer(URL_TESELAS, {
+      attribution: ATRIBUCION_TESELAS,
       maxZoom: 19,
     }).addTo(mapa.current);
 

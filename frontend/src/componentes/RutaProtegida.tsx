@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
-import { Cargando, MensajeError } from './comunes/Estados';
+import { useAutenticacion } from '../contextos/useAutenticacion';
+import { MensajeError } from './comunes/Estados';
 import type { NombreRol } from '../tipos';
 
 interface Props {
@@ -16,14 +16,8 @@ interface Props {
  * navegador puede llegar igual a la pantalla, pero la API rechazará sus peticiones.
  */
 export function RutaProtegida({ children, rolesPermitidos }: Props) {
-  const { usuario, cargando } = useAutenticacion();
+  const { usuario } = useAutenticacion();
   const ubicacion = useLocation();
-
-  // Mientras se recupera la sesión guardada no se decide nada, para no
-  // mandar al login a alguien que sí tiene sesión válida.
-  if (cargando) {
-    return <Cargando mensaje="Verificando tu sesión…" />;
-  }
 
   if (!usuario) {
     // Se recuerda a dónde iba para volver ahí después de iniciar sesión.

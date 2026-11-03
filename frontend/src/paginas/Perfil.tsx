@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { KeyRound, Save } from 'lucide-react';
 import { servicioPerfil } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
@@ -30,11 +30,13 @@ export function Perfil() {
   const [guardandoDatos, setGuardandoDatos] = useState(false);
   const [guardandoPassword, setGuardandoPassword] = useState(false);
 
-  useEffect(() => {
-    if (perfil) {
-      setDatos({ nombre: perfil.nombre, apellido: perfil.apellido, email: perfil.email });
-    }
-  }, [perfil]);
+  // Cada vez que llega el perfil del servidor (al abrir y tras guardar) se copia al formulario.
+  // Se hace durante el render y no en un efecto, para no pintar primero datos viejos.
+  const [perfilCopiado, setPerfilCopiado] = useState<typeof perfil>(null);
+  if (perfil && perfil !== perfilCopiado) {
+    setPerfilCopiado(perfil);
+    setDatos({ nombre: perfil.nombre, apellido: perfil.apellido, email: perfil.email });
+  }
 
   async function guardarDatos() {
     setGuardandoDatos(true);

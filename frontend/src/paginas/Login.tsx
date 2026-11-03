@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff, LogIn } from 'lucide-react';
-import { useAutenticacion } from '../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../contextos/useAutenticacion';
 import { Boton } from '../componentes/comunes/Boton';
 import { ErrorApi } from '../api/cliente';
 import './Login.css';

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ClipboardPaste, MapPin } from 'lucide-react';
 import { interpretarCoordenadas } from '../../utilidades/coordenadas';
 import { Boton } from './Boton';
@@ -16,15 +16,20 @@ interface Props {
  * "-17.783, -63.182", además de los valores escritos uno por uno.
  */
 export function CampoCoordenadas({ latitud, longitud, alCambiar }: Props) {
-  const [textoPegado, setTextoPegado] = useState('');
+  const [textoPegado, setTextoPegado] = useState(() =>
+    latitud != null && longitud != null ? `${latitud}, ${longitud}` : '',
+  );
   const [error, setError] = useState('');
 
   // Si las coordenadas cambian desde el mapa, se refleja en la caja de texto.
-  useEffect(() => {
+  const [coordenadasVistas, setCoordenadasVistas] = useState({ latitud, longitud });
+  if (coordenadasVistas.latitud !== latitud || coordenadasVistas.longitud !== longitud) {
+    setCoordenadasVistas({ latitud, longitud });
+
     if (latitud != null && longitud != null) {
       setTextoPegado(`${latitud}, ${longitud}`);
     }
-  }, [latitud, longitud]);
+  }
 
   function aplicarTextoPegado(texto: string) {
     setTextoPegado(texto);

@@ -1,4 +1,5 @@
-import { Outlet } from 'react-router-dom';
+import { Suspense } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import {
   BarChart3,
   Baby,
@@ -11,7 +12,10 @@ import {
   UserCog,
 } from 'lucide-react';
 import { BarraSuperior } from './BarraSuperior';
-import { useAutenticacion } from '../../contextos/ContextoAutenticacion';
+import { useAutenticacion } from '../../contextos/useAutenticacion';
+import { LimiteDeErrores } from '../LimiteDeErrores';
+import { Cargando } from '../comunes/Estados';
+import '../../estilos/compartidos.css';
 import './Diseno.css';
 
 /**
@@ -63,6 +67,7 @@ const SUBTITULOS: Record<string, string> = {
 
 export function Diseno() {
   const { usuario } = useAutenticacion();
+  const ubicacion = useLocation();
 
   return (
     <div className="diseno">
@@ -77,7 +82,12 @@ export function Diseno() {
       />
 
       <main id="contenido" className="diseno__contenido">
-        <Outlet />
+        {/* El menú queda en pantalla si una sección falla o tarda en descargarse. */}
+        <LimiteDeErrores key={ubicacion.pathname}>
+          <Suspense fallback={<Cargando />}>
+            <Outlet />
+          </Suspense>
+        </LimiteDeErrores>
       </main>
 
       <footer className="diseno__pie">
