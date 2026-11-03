@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SISTEMADANIELITO.Data;
 using SISTEMADANIELITO.DTOS;
 using SISTEMADANIELITO.Excepciones;
 using SISTEMADANIELITO.Interfaces;
+using SISTEMADANIELITO.Middleware;
 using SISTEMADANIELITO.Models;
 
 namespace SISTEMADANIELITO.Services;
@@ -23,17 +25,20 @@ public class UsuarioService : IUsuarioService
     private readonly AppIdentityContext _contextIdentity;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IMemoryCache _cache;
 
     public UsuarioService(
         AppProyectoContext context,
         AppIdentityContext contextIdentity,
         UserManager<IdentityUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        IMemoryCache cache)
     {
         _context = context;
         _contextIdentity = contextIdentity;
         _userManager = userManager;
         _roleManager = roleManager;
+        _cache = cache;
     }
 
     //OBTENER TODOS
@@ -88,6 +93,9 @@ public class UsuarioService : IUsuarioService
 
         _context.Perfiles.Update(bdPerfil);
         await _context.SaveChangesAsync();
+
+        // Sin esto, el estado anterior seguiría valiendo hasta un minuto en el validador del token.
+        _cache.Remove(ValidadorDeCuenta.Clave(bdPerfil.Id));
     }
 
     //CAMBIAR ROL

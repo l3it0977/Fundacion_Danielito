@@ -73,6 +73,13 @@ public class ManejadorErroresMiddleware
                 mensajeParaElCliente = "El registro ya existe o duplica un valor único.";
                 break;
 
+            // Lo mismo con las claves foráneas: la base rechaza borrar algo que tiene
+            // registros relacionados (23503), y eso no es un fallo del servidor.
+            case Exception when EsViolacionDeClaveForanea(excepcion):
+                codigoHttp = StatusCodes.Status409Conflict;
+                mensajeParaElCliente = "No se puede eliminar porque tiene registros relacionados.";
+                break;
+
             default:
                 // Error inesperado: el detalle va al log del servidor, nunca al cliente.
                 codigoHttp = StatusCodes.Status500InternalServerError;
@@ -96,6 +103,13 @@ public class ManejadorErroresMiddleware
 
         string cuerpo = JsonSerializer.Serialize(new { mensaje = mensajeParaElCliente });
         await contexto.Response.WriteAsync(cuerpo);
+    }
+
+    /// <summary>El código 23503 de PostgreSQL corresponde a "foreign_key_violation".</summary>
+    private static bool EsViolacionDeClaveForanea(Exception excepcion)
+    {
+        return excepcion is PostgresException { SqlState: "23503" }
+            || excepcion.InnerException is PostgresException { SqlState: "23503" };
     }
 
     /// <summary>

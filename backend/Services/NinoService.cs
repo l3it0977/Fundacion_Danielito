@@ -77,7 +77,36 @@ public class NinoService : INinoService
             throw (new RecursoNoEncontradoException("Niño no encontrado"));
         }
 
+        // Borrar a un niño con historial arrastraría sus asistencias y cambiaría los
+        // reportes ya entregados. La base también lo impide (DeleteBehavior.Restrict),
+        // pero aquí se avisa con un mensaje claro.
+        bool tieneHistorial = _context.Asistencias.Any(x => x.NinoId == id)
+            || _context.Visitas.Any(x => x.NinoId == id)
+            || _context.Actividad_Ninos.Any(x => x.NinoId == id);
+
+        if (tieneHistorial)
+        {
+            throw (new ReglaNegocioException(
+                $"{nino.Nombres} {nino.Apellidos} ya tiene asistencias, visitas o actividades. " +
+                "Desactívalo para conservar su historial."));
+        }
+
         _context.Ninos.Remove(nino);
+        _context.SaveChanges();
+    }
+
+    //ACTIVAR O DESACTIVAR
+    public void CambiarEstado(CambiarEstadoNinoDTO cambio)
+    {
+        Nino? bdNino = _context.Ninos.FirstOrDefault(x => x.Id.Equals(cambio.NinoId));
+        if (bdNino == null)
+        {
+            throw (new RecursoNoEncontradoException("Niño no encontrado"));
+        }
+
+        bdNino.Activo = cambio.Activo;
+
+        _context.Ninos.Update(bdNino);
         _context.SaveChanges();
     }
 

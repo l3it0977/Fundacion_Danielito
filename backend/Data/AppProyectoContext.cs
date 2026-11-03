@@ -85,11 +85,12 @@ public class AppProyectoContext : DbContext
             .HasForeignKey(x => x.ActividadId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Restrict hacia Nino: borrar a un niño no puede arrastrar su historial. Se desactiva.
         modelBuilder.Entity<Asistencia>()
             .HasOne(x => x.Nino)
             .WithMany(x => x.Asistencias)
             .HasForeignKey(x => x.NinoId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Asistencia>()
             .HasOne(x => x.RegistradoPor)
@@ -114,7 +115,7 @@ public class AppProyectoContext : DbContext
             .HasOne(x => x.Nino)
             .WithMany(x => x.Visitas)
             .HasForeignKey(x => x.NinoId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Visita>()
             .HasOne(x => x.RealizadoPor)
@@ -136,6 +137,6 @@ public class AppProyectoContext : DbContext
             .HasOne(x => x.Nino)
             .WithMany(x => x.Actividad_Ninos)
             .HasForeignKey(x => x.NinoId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

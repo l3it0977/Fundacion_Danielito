@@ -95,5 +95,10 @@ de migraciones, sobre la misma base de datos.
 - **Maestro**: ve solo los niños y actividades de los grupos que tiene a cargo.
 
 Los usuarios no se eliminan, se desactivan, para conservar el registro de quién anotó
-cada asistencia. Ten en cuenta que al desactivar a alguien su sesión sigue siendo válida
-hasta que expire el token, que dura 2 horas.
+cada asistencia. Al desactivar a alguien pierde el acceso de inmediato: el servidor
+comprueba en cada petición que la cuenta siga activa (con un respaldo en memoria de un
+minuto), así que no hay que esperar a que expire el token de 2 horas.
+
+Los niños siguen la misma lógica: se desactivan en lugar de borrarse, porque su historial
+de asistencias y visitas alimenta los reportes. Solo se puede eliminar una ficha creada por
+error, que aún no tenga ningún registro.

@@ -46,7 +46,10 @@ export const servicioNinos = {
   obtener: (id: number) => api.obtener<Nino>(`/Nino/${id}`),
   crear: (datos: Partial<Nino>) => api.crear<string>('/Nino', datos),
   actualizar: (datos: Partial<Nino>) => api.actualizar<string>('/Nino', datos),
+  /** Borrado real: solo prospera con fichas sin historial; si no, hay que desactivar. */
   eliminar: (id: number) => api.eliminar<string>(`/Nino/${id}`),
+  cambiarEstado: (ninoId: number, activo: boolean) =>
+    api.actualizar<string>('/Nino/Estado', { ninoId, activo }),
 
   /** Todos los niños en versión reducida, para elegir participantes. */
   paraSeleccion: () => api.obtener<NinoSeleccion[]>('/Nino/ParaSeleccion'),

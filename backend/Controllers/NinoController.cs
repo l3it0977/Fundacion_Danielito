@@ -61,7 +61,20 @@ public class NinoController : ControllerBase
         return "Niño modificado correctamente";
     }
 
+    //ACTIVAR O DESACTIVAR
+    [Authorize(Roles = "Directora,Administrador")]
+    [HttpPut("Estado")]
+    public string PutEstado(CambiarEstadoNinoDTO cambio)
+    {
+        _ninoService.CambiarEstado(cambio);
+
+        return cambio.Activo
+            ? "Niño activado correctamente"
+            : "Niño desactivado correctamente";
+    }
+
     //ELIMINAR
+    // Solo prospera con fichas sin historial; si ya tiene registros, se desactiva.
     [Authorize(Roles = "Directora,Administrador")]
     [HttpDelete("{id}")]
     public string Delete(int id)

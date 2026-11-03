@@ -15,6 +15,9 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+// Guarda por un minuto si cada cuenta sigue activa (ver ValidadorDeCuenta).
+builder.Services.AddMemoryCache();
 builder.Services.AddOpenApi();
 
 // CORS: el navegador bloquea las peticiones del frontend si el backend no autoriza su origen.
@@ -98,6 +101,13 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateLifetime = true,
         ClockSkew = TimeSpan.FromMinutes(1)
+    };
+
+    // Un token válido no basta: la cuenta debe seguir activa. Así desactivar a alguien
+    // le corta el acceso enseguida, sin esperar a que el token expire.
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = ValidadorDeCuenta.Validar
     };
 });
 //-------------------------------------------------------------------------------------------------------

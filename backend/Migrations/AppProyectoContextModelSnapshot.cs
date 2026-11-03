@@ -341,7 +341,7 @@ namespace SISTEMADANIELITO.Migrations
                     b.HasOne("SISTEMADANIELITO.Models.Nino", "Nino")
                         .WithMany("Actividad_Ninos")
                         .HasForeignKey("NinoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Actividad");
@@ -360,7 +360,7 @@ namespace SISTEMADANIELITO.Migrations
                     b.HasOne("SISTEMADANIELITO.Models.Nino", "Nino")
                         .WithMany("Asistencias")
                         .HasForeignKey("NinoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SISTEMADANIELITO.Models.Perfil", "RegistradoPor")
@@ -411,7 +411,7 @@ namespace SISTEMADANIELITO.Migrations
                     b.HasOne("SISTEMADANIELITO.Models.Nino", "Nino")
                         .WithMany("Visitas")
                         .HasForeignKey("NinoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SISTEMADANIELITO.Models.Perfil", "RealizadoPor")

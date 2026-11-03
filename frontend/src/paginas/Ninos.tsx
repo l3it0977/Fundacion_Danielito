@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, Eye, Pencil, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-react';
 import { servicioNinos } from '../api/servicios';
 import { useCargarDatos } from '../hooks/useCargarDatos';
 import { useAutenticacion } from '../contextos/ContextoAutenticacion';
@@ -9,7 +9,7 @@ import { Boton } from '../componentes/comunes/Boton';
 import { Aviso } from '../componentes/comunes/Aviso';
 import { Cargando, MensajeError, SinDatos } from '../componentes/comunes/Estados';
 import { Insignia } from '../componentes/comunes/Insignia';
-import { CampoTexto } from '../componentes/comunes/Campos';
+import { CampoCasilla, CampoTexto } from '../componentes/comunes/Campos';
 import { DialogoConfirmacion } from '../componentes/comunes/DialogoConfirmacion';
 import type { Nino } from '../tipos';
 import './Listados.css';
@@ -19,7 +19,10 @@ export function Ninos() {
   const { datos: ninos, cargando, error, recargar } = useCargarDatos(servicioNinos.listar);
 
   const [busqueda, setBusqueda] = useState('');
+  // Los inactivos se ocultan por defecto: siguen en el sistema con su historial.
+  const [verInactivos, setVerInactivos] = useState(false);
   const [ninoAEliminar, setNinoAEliminar] = useState<Nino | null>(null);
+  const [ninoACambiarEstado, setNinoACambiarEstado] = useState<Nino | null>(null);
   const [aviso, setAviso] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
   const [procesando, setProcesando] = useState(false);
 
@@ -33,11 +36,13 @@ export function Ninos() {
 
     const textoBuscado = busqueda.trim().toLowerCase();
 
+    const visibles = verInactivos ? ninos : ninos.filter((nino) => nino.activo);
+
     const coincidentes = textoBuscado
-      ? ninos.filter((nino) =>
+      ? visibles.filter((nino) =>
           `${nino.nombres} ${nino.apellidos} ${nino.codigo}`.toLowerCase().includes(textoBuscado),
         )
-      : ninos;
+      : visibles;
 
     const agrupados = new Map<string, Nino[]>();
 
@@ -49,7 +54,29 @@ export function Ninos() {
     return [...agrupados.entries()].sort((unGrupo, otroGrupo) =>
       unGrupo[0].localeCompare(otroGrupo[0]),
     );
-  }, [ninos, busqueda]);
+  }, [ninos, busqueda, verInactivos]);
+
+  async function cambiarEstado() {
+    if (!ninoACambiarEstado) {
+      return;
+    }
+
+    setProcesando(true);
+    setAviso(null);
+
+    try {
+      const nuevoEstado = !ninoACambiarEstado.activo;
+      await servicioNinos.cambiarEstado(ninoACambiarEstado.id, nuevoEstado);
+
+      setAviso({ tipo: 'exito', texto: nuevoEstado ? 'Niño activado.' : 'Niño desactivado.' });
+      recargar();
+    } catch (fallo) {
+      setAviso({ tipo: 'error', texto: (fallo as Error).message });
+    } finally {
+      setProcesando(false);
+      setNinoACambiarEstado(null);
+    }
+  }
 
   async function eliminar() {
     if (!ninoAEliminar) {
@@ -116,6 +143,14 @@ export function Ninos() {
           />
         </div>
 
+        <div className="filtros__campo filtros__campo--casilla">
+          <CampoCasilla
+            etiqueta="Mostrar inactivos"
+            checked={verInactivos}
+            onChange={(evento) => setVerInactivos(evento.target.checked)}
+          />
+        </div>
+
         <p className="filtros__resultado">
           <Search size={16} aria-hidden="true" />
           {totalEncontrados} {totalEncontrados === 1 ? 'niño' : 'niños'}
@@ -127,7 +162,9 @@ export function Ninos() {
           mensaje={
             busqueda
               ? `No se encontraron niños que coincidan con "${busqueda}".`
-              : 'Todavía no hay niños registrados.'
+              : verInactivos
+                ? 'Todavía no hay niños registrados.'
+                : 'No hay niños activos. Marca "Mostrar inactivos" para ver los demás.'
           }
         />
       ) : (
@@ -199,6 +236,15 @@ export function Ninos() {
 
                               <Boton
                                 tamano="chico"
+                                variante="contorno"
+                                onClick={() => setNinoACambiarEstado(nino)}
+                                icono={nino.activo ? <UserX size={14} /> : <UserCheck size={14} />}
+                              >
+                                {nino.activo ? 'Desactivar' : 'Activar'}
+                              </Boton>
+
+                              <Boton
+                                tamano="chico"
                                 variante="peligro"
                                 onClick={() => setNinoAEliminar(nino)}
                                 icono={<Trash2 size={14} />}
@@ -218,10 +264,25 @@ export function Ninos() {
         ))
       )}
 
+      {ninoACambiarEstado && (
+        <DialogoConfirmacion
+          titulo={ninoACambiarEstado.activo ? 'Desactivar niño' : 'Activar niño'}
+          mensaje={
+            ninoACambiarEstado.activo
+              ? `${ninoACambiarEstado.nombres} ${ninoACambiarEstado.apellidos} dejará de aparecer al armar actividades, pero se conserva todo su historial y sigue en los reportes.`
+              : `${ninoACambiarEstado.nombres} ${ninoACambiarEstado.apellidos} volverá a poder elegirse en las actividades.`
+          }
+          textoConfirmar={ninoACambiarEstado.activo ? 'Desactivar' : 'Activar'}
+          procesando={procesando}
+          alConfirmar={cambiarEstado}
+          alCancelar={() => setNinoACambiarEstado(null)}
+        />
+      )}
+
       {ninoAEliminar && (
         <DialogoConfirmacion
           titulo="Eliminar niño"
-          mensaje={`Se eliminará a ${ninoAEliminar.nombres} ${ninoAEliminar.apellidos} junto con su historial de asistencias y visitas. Esta acción no se puede deshacer.`}
+          mensaje={`Se eliminará la ficha de ${ninoAEliminar.nombres} ${ninoAEliminar.apellidos}. Solo es posible si se creó por error y aún no tiene asistencias, visitas ni actividades; si ya las tiene, usa Desactivar. Esta acción no se puede deshacer.`}
           textoConfirmar="Eliminar"
           esDestructiva
           procesando={procesando}

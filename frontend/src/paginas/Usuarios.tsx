@@ -209,7 +209,7 @@ export function Usuarios() {
           titulo={usuarioACambiarEstado.activo ? 'Desactivar usuario' : 'Activar usuario'}
           mensaje={
             usuarioACambiarEstado.activo
-              ? `${usuarioACambiarEstado.nombre} ${usuarioACambiarEstado.apellido} dejará de poder entrar al sistema. Su sesión actual seguirá activa hasta 2 horas.`
+              ? `${usuarioACambiarEstado.nombre} ${usuarioACambiarEstado.apellido} dejará de poder entrar al sistema. Si tiene una sesión abierta, se le cerrará en su próxima acción.`
               : `${usuarioACambiarEstado.nombre} ${usuarioACambiarEstado.apellido} podrá volver a entrar al sistema.`
           }
           textoConfirmar={usuarioACambiarEstado.activo ? 'Desactivar' : 'Activar'}

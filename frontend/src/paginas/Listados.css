@@ -41,6 +41,13 @@
   min-width: 200px;
 }
 
+/* La casilla no necesita estirarse; se alinea con la base del campo de búsqueda. */
+.filtros__campo--casilla {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-bottom: var(--espacio-3);
+}
+
 /* ---------- Agrupación por secciones plegables ---------- */
 
 .grupo-plegable {
