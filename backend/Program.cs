@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,37 @@ builder.Services.AddCors(opciones =>
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
+});
+
+// Límite de intentos de login por dirección IP. El bloqueo por cuenta (5 fallos) no frena a
+// quien prueba contraseñas contra muchos correos distintos; este límite sí.
+// Si la API queda detrás de un proxy inverso hay que configurar ForwardedHeaders, o todas
+// las peticiones parecerán venir de la IP del proxy y compartirían el mismo cupo.
+const string PoliticaLogin = "PoliticaLogin";
+
+builder.Services.AddRateLimiter(opciones =>
+{
+    opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    opciones.AddPolicy(PoliticaLogin, contexto =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            contexto.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    opciones.OnRejected = async (contexto, cancelacion) =>
+    {
+        contexto.HttpContext.Response.Headers.RetryAfter = "60";
+        contexto.HttpContext.Response.ContentType = "application/json";
+
+        await contexto.HttpContext.Response.WriteAsync(
+            "{\"mensaje\":\"Demasiados intentos. Espera un minuto antes de volver a intentarlo.\"}",
+            cancelacion);
+    };
 });
 
 // QuestPDF reemplaza a DomPDF en los reportes. La licencia Community cubre a organizaciones
@@ -138,6 +170,8 @@ app.UseHttpsRedirection();
 // CORS va antes de la autenticación: si no, un 401 llega al navegador sin las cabeceras
 // de CORS y el error que se ve es confuso.
 app.UseCors(PoliticaFrontend);
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

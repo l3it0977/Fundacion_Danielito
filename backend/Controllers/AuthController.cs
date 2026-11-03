@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SISTEMADANIELITO.Data;
@@ -114,6 +115,7 @@ public class AuthController : ControllerBase
     //LOGIN
     [HttpPost("Login")]
     [AllowAnonymous]
+    [EnableRateLimiting("PoliticaLogin")]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
