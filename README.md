@@ -75,6 +75,11 @@ npm test
 Las pruebas del backend usan SQLite en memoria, así que no tocan tu base de datos ni necesitan
 PostgreSQL.
 
+## Copias de seguridad
+
+`scripts/respaldos/` trae los scripts para respaldar, programar y restaurar la base. Ver
+[docs/respaldos.md](docs/respaldos.md).
+
 ## Migrar a Supabase
 
 Supabase expone PostgreSQL estándar, así que basta con cambiar la cadena de conexión:
