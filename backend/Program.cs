@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -35,10 +36,26 @@ builder.Services.AddCors(opciones =>
     });
 });
 
+// Detrás de un proxy inverso (nginx, Caddy...) la API solo ve la dirección del proxy: el límite
+// de intentos de login compartiría un único cupo para todos y la bitácora no sabría de dónde
+// vienen las peticiones. Con esto se confía en las cabeceras X-Forwarded-*. Actívalo SOLO si
+// el puerto de la API no es accesible desde fuera: si lo es, cualquiera podría falsificarlas.
+bool detrasDeProxy = builder.Configuration.GetValue<bool>("ForwardedHeaders:Habilitado");
+
+if (detrasDeProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(opciones =>
+    {
+        opciones.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        opciones.KnownIPNetworks.Clear();
+        opciones.KnownProxies.Clear();
+    });
+}
+
 // Límite de intentos de login por dirección IP. El bloqueo por cuenta (5 fallos) no frena a
 // quien prueba contraseñas contra muchos correos distintos; este límite sí.
-// Si la API queda detrás de un proxy inverso hay que configurar ForwardedHeaders, o todas
-// las peticiones parecerán venir de la IP del proxy y compartirían el mismo cupo.
+// Detrás de un proxy hay que activar ForwardedHeaders (ver más abajo), o todas las peticiones
+// compartirían el cupo de la IP del proxy.
 const string PoliticaLogin = "PoliticaLogin";
 
 builder.Services.AddRateLimiter(opciones =>
@@ -50,7 +67,7 @@ builder.Services.AddRateLimiter(opciones =>
             contexto.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = builder.Configuration.GetValue("Seguridad:IntentosDeLoginPorMinuto", 10),
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
@@ -151,6 +168,17 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// Crea o actualiza las tablas al arrancar. Está apagado por omisión: sirve para el despliegue con
+// Docker, donde la base nace vacía. Con varias copias de la API a la vez habría que migrar aparte.
+if (builder.Configuration.GetValue<bool>("BaseDeDatos:MigrarAlIniciar"))
+{
+    using var alcance = app.Services.CreateScope();
+
+    await alcance.ServiceProvider.GetRequiredService<AppIdentityContext>().Database.MigrateAsync();
+    await alcance.ServiceProvider.GetRequiredService<AppProyectoContext>().Database.MigrateAsync();
+    app.Logger.LogInformation("Migraciones aplicadas.");
+}
+
 // Siembra roles y usuarios iniciales. Requiere la base ya migrada; si falla, la API arranca igual.
 try
 {
@@ -167,10 +195,28 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Va primero de todo para que también capture los errores del resto del pipeline.
+// Primero de todo, para que la dirección real de quien llama ya esté lista para el resto.
+if (detrasDeProxy)
+{
+    app.UseForwardedHeaders();
+}
+
+app.UseMiddleware<CabecerasDeSeguridadMiddleware>();
+
+// Va antes del resto para que también capture los errores del pipeline.
 app.UseMiddleware<ManejadorErroresMiddleware>();
 
-app.UseHttpsRedirection();
+// La redirección a HTTPS solo tiene sentido si es la propia API la que atiende HTTPS. Detrás de
+// un proxy que ya lo hace, redirigir aquí provocaría un bucle; por eso es opcional.
+if (builder.Configuration.GetValue<bool>("Seguridad:RedirigirAHttps"))
+{
+    app.UseHttpsRedirection();
+
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHsts();
+    }
+}
 
 // CORS va antes de la autenticación: si no, un 401 llega al navegador sin las cabeceras
 // de CORS y el error que se ve es confuso.
@@ -183,4 +229,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Para que el orquestador (Docker, un monitor) sepa si la API está viva y alcanza la base.
+// Es anónimo y no devuelve ningún dato.
+app.MapGet("/salud", async (AppProyectoContext contexto) =>
+    await contexto.Database.CanConnectAsync()
+        ? Results.Ok(new { estado = "ok" })
+        : Results.StatusCode(StatusCodes.Status503ServiceUnavailable))
+    .AllowAnonymous();
+
 app.Run();
+
+// Lo necesitan las pruebas de integración para levantar la aplicación completa en memoria.
+public partial class Program;
