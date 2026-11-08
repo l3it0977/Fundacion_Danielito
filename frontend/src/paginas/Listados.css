@@ -299,6 +299,11 @@
   color: var(--texto-medio);
 }
 
+/* Aviso que va entre los filtros y los botones de descarga. */
+.texto-ayuda--separado {
+  margin-top: var(--espacio-4);
+}
+
 /* El texto del encabezado se encoge antes que los botones al faltar espacio. */
 .encabezado-pagina__texto {
   min-width: 0;

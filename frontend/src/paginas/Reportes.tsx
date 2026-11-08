@@ -68,10 +68,11 @@ export function Reportes() {
         </Aviso>
       )}
 
-      {/* Un solo juego de filtros para ambos reportes, para no repetir la elección. */}
-      <Panel titulo="¿Qué quieres reportar?">
+      <Panel titulo="Asistencia total y por grupo">
         <p className="texto-ayuda">
-          Deja “Todos” para incluir todas las edades o todos los meses en un solo reporte.
+          Resumen general con el porcentaje de asistencia, el desglose por grupo
+          {mes ? ' y el detalle día por día' : ', por mes y por niño'}.
+          Deja “Todos” para incluir todas las edades o todos los meses.
         </p>
 
         <div className="filtros">
@@ -113,13 +114,9 @@ export function Reportes() {
             />
           </div>
         </div>
-      </Panel>
 
-      <Panel titulo="Asistencia total y por grupo">
-        <p className="texto-ayuda">
-          Resumen general con el porcentaje de asistencia, el desglose por grupo
-          {mes ? ' y el detalle día por día' : ', por mes y por niño'}.
-          <strong> Se generará para: {textoGrupo}, {textoPeriodo}.</strong>
+        <p className="texto-ayuda texto-ayuda--separado">
+          <strong>Se generará para: {textoGrupo}, {textoPeriodo}.</strong>
         </p>
 
         <div className="acciones-reporte">
@@ -145,24 +142,6 @@ export function Reportes() {
             Descargar Excel
           </Boton>
         </div>
-      </Panel>
-
-      <Panel titulo="Actividades">
-        <p className="texto-ayuda">
-          Listado de las actividades realizadas, con sus grupos y participantes.
-          <strong> Se generará para: {textoGrupo}, {textoPeriodo}.</strong>
-        </p>
-
-        <Boton
-          variante="naranja"
-          cargando={descargando === 'actividades'}
-          icono={<FileDown size={18} />}
-          onClick={() =>
-            descargar('actividades', () => servicioReportes.actividades(filtros))
-          }
-        >
-          Descargar PDF
-        </Boton>
       </Panel>
 
       <Aviso tipo="informacion">

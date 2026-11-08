@@ -209,11 +209,6 @@ export const servicioReportes = {
       `/Reporte/AsistenciaExcel?${armarConsulta(filtros)}`,
       `asistencia-${nombrePeriodo(filtros)}.xlsx`,
     ),
-  actividades: (filtros: FiltrosReporte) =>
-    api.descargar(
-      `/Reporte/Actividades?${armarConsulta(filtros)}`,
-      `actividades-${nombrePeriodo(filtros)}.pdf`,
-    ),
   asistenciaPorActividad: (actividadId: number) =>
     api.descargar(
       `/Reporte/AsistenciaPorActividad/${actividadId}`,

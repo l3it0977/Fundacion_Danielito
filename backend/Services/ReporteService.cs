@@ -105,70 +105,7 @@ public class ReporteService : IReporteService
         return new DatosDeAsistencia(bdGrupo, mes, anio, grupos, ninos, registros);
     }
 
-    //REPORTE 2: ACTIVIDADES
-    public async Task<byte[]> GenerarActividades(int? grupoId, int? mes, int anio)
-    {
-        Periodo.Validar(mes, anio);
-
-        Grupo? bdGrupo = null;
-        if (grupoId.HasValue)
-        {
-            bdGrupo = await _context.Grupos.FirstOrDefaultAsync(x => x.Id.Equals(grupoId.Value));
-
-            if (bdGrupo == null)
-            {
-                throw (new RecursoNoEncontradoException("Grupo no encontrado"));
-            }
-        }
-
-        var (inicio, fin) = Periodo.Rango(mes, anio);
-        var consulta = _context.Actividades
-            .Where(x => x.Fecha_Actividad >= inicio && x.Fecha_Actividad < fin);
-
-        bool filtrarGrupo = grupoId.HasValue;
-        int idGrupo = grupoId ?? 0;
-
-        if (filtrarGrupo)
-        {
-            consulta = consulta.Where(x => x.Actividad_Ninos.Any(an => an.Nino.GrupoId == idGrupo));
-        }
-
-        // Con un grupo elegido, solo cuentan los niños de ese grupo. Los grupos y el conteo
-        // se arman en memoria: son pocas actividades y así la consulta no depende de
-        // subconsultas correlacionadas que no todos los proveedores de base traducen.
-        List<Actividad> bdActividades = await consulta
-            .Include(x => x.Actividad_Ninos)
-                .ThenInclude(x => x.Nino)
-                    .ThenInclude(x => x.Grupo)
-            .OrderBy(x => x.Fecha_Actividad)
-            .ToListAsync();
-
-        List<ActividadDelReporte> actividades = bdActividades
-            .Select(x =>
-            {
-                var participantes = x.Actividad_Ninos
-                    .Where(an => !filtrarGrupo || an.Nino.GrupoId == idGrupo)
-                    .ToList();
-
-                return new ActividadDelReporte(
-                    x.Fecha_Actividad,
-                    x.Nombre,
-                    x.Tipo,
-                    participantes.Select(an => an.Nino.Grupo.Nombre).Distinct().ToList(),
-                    participantes.Count);
-            })
-            .ToList();
-
-        return PdfActividades.Generar(new DatosDeActividades
-        {
-            GrupoElegido = bdGrupo,
-            Mes = mes,
-            Anio = anio,
-            Actividades = actividades
-        });
-    }
-
-    //REPORTE 3: ASISTENCIA POR ACTIVIDAD
+    //REPORTE 2: ASISTENCIA POR ACTIVIDAD
     public async Task<byte[]> GenerarAsistenciaPorActividad(int actividadId, int? maestroId)
     {
         await _actividadService.ValidarAcceso(actividadId, maestroId);

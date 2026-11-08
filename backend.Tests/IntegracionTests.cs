@@ -113,7 +113,7 @@ public class IntegracionTests : IAsyncLifetime
         var directora = await _app.ClienteAutenticadoAsync("dunia@prueba.com");
         var maestra = await _app.ClienteAutenticadoAsync("ana@prueba.com");
 
-        foreach (var ruta in new[] { "/Reporte/Asistencia", "/Reporte/AsistenciaExcel", "/Reporte/Actividades", "/Bitacora/Buscar", "/Usuario" })
+        foreach (var ruta in new[] { "/Reporte/Asistencia", "/Reporte/AsistenciaExcel", "/Bitacora/Buscar", "/Usuario" })
         {
             Assert.Equal(HttpStatusCode.Forbidden, (await maestra.GetAsync(ruta)).StatusCode);
             Assert.Equal(HttpStatusCode.OK, (await directora.GetAsync(ruta)).StatusCode);
@@ -208,13 +208,11 @@ public class IntegracionTests : IAsyncLifetime
 
         var pdf = await directora.GetAsync("/Reporte/Asistencia?anio=2026&mes=10");
         var excel = await directora.GetAsync("/Reporte/AsistenciaExcel?anio=2026");
-        var actividades = await directora.GetAsync("/Reporte/Actividades?anio=2026");
 
         Assert.Equal("application/pdf", pdf.Content.Headers.ContentType?.MediaType);
         Assert.Equal("asistencia-todos-los-grupos-10-2026.pdf", pdf.Content.Headers.ContentDisposition?.FileName);
         Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excel.Content.Headers.ContentType?.MediaType);
         Assert.Equal("asistencia-todos-los-grupos-todo-2026.xlsx", excel.Content.Headers.ContentDisposition?.FileName);
-        Assert.Equal("application/pdf", actividades.Content.Headers.ContentType?.MediaType);
 
         var inicio = await pdf.Content.ReadAsByteArrayAsync();
         Assert.Equal("%PDF", System.Text.Encoding.ASCII.GetString(inicio, 0, 4));

@@ -114,19 +114,6 @@ internal sealed class DatosDeAsistencia
     }
 }
 
-internal sealed record ActividadDelReporte(
-    DateOnly Fecha, string Nombre, string Tipo, List<string> Grupos, int Participantes);
-
-internal sealed class DatosDeActividades
-{
-    public Grupo? GrupoElegido { get; init; }
-    public int? Mes { get; init; }
-    public int Anio { get; init; }
-    public List<ActividadDelReporte> Actividades { get; init; } = [];
-
-    public int TotalParticipaciones => Actividades.Sum(x => x.Participantes);
-}
-
 internal sealed record RegistroDeSesion(string Nombre_Completo, string Estado, string? Motivo_Justificacion);
 
 internal sealed record SesionDelReporte(DateOnly Fecha, List<RegistroDeSesion> Registros);

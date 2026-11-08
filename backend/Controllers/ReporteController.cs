@@ -6,7 +6,7 @@ namespace SISTEMADANIELITO.Controllers;
 
 /// <summary>
 /// Descarga de los reportes en PDF.
-/// Los tres exigen sesión: contienen datos personales de los niños, así que un enlace
+/// Todos exigen sesión: contienen datos personales de los niños, así que un enlace
 /// suelto no debe bastar para descargarlos.
 /// </summary>
 [ApiController]
@@ -46,19 +46,6 @@ public class ReporteController : ControllerBase
         return File(archivo,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"asistencia-{NombreDelPeriodo(grupoId, mes, anioElegido)}.xlsx");
-    }
-
-    //ACTIVIDADES
-    [Authorize(Roles = "Directora,Administrador")]
-    [HttpGet("Actividades")]
-    public async Task<IActionResult> GetActividades(int? grupoId, int? mes, int? anio)
-    {
-        int anioElegido = anio ?? DateTime.Today.Year;
-
-        byte[] archivo = await _reporteService.GenerarActividades(grupoId, mes, anioElegido);
-
-        return File(archivo, "application/pdf",
-            $"actividades-{NombreDelPeriodo(grupoId, mes, anioElegido)}.pdf");
     }
 
     //ASISTENCIA POR ACTIVIDAD

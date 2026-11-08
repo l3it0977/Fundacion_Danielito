@@ -18,12 +18,6 @@ public interface IReporteService
     /// </summary>
     public Task<byte[]> GenerarAsistenciaExcel(int? grupoId, int? mes, int anio);
 
-    /// <summary>
-    /// Listado de actividades realizadas. grupoId nulo = todos los grupos de edad;
-    /// mes nulo = todos los meses del año.
-    /// </summary>
-    public Task<byte[]> GenerarActividades(int? grupoId, int? mes, int anio);
-
     /// <summary>Asistencia de una actividad, agrupada por cada sesión (fecha) registrada.</summary>
     // maestroId no nulo: solo si la actividad le corresponde a ese maestro.
     public Task<byte[]> GenerarAsistenciaPorActividad(int actividadId, int? maestroId);

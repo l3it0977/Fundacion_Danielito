@@ -1,36 +1,79 @@
 # ---------- Backend (.NET) ----------
-/backend/bin
-/backend/obj
-/backend.Tests/bin
-/backend.Tests/obj
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+TestResults/
+*.user
+*.suo
+*.userprefs
+.vs/
+# Cobertura de pruebas
+coverage/
+*.coverage
+*.coveragexml
 # La configuración local va en user-secrets, fuera del repositorio.
-/backend/appsettings.*.local.json
+appsettings.*.local.json
+secrets.json
 
+# ---------- Claves y variables de entorno ----------
 # Claves del despliegue con Docker (ver .env.example).
-/.env
+.env
+.env.*
+!.env.example
+# Solo tiene la URL local de la API (sin claves); se versiona.
+!frontend/.env
+*.pfx
+*.pem
+*.key
 
 # ---------- Frontend (React) ----------
-/frontend/node_modules
-/frontend/dist
-/frontend/.vite
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
 # Contiene la dirección de la API de cada entorno.
-/frontend/.env.local
+frontend/.env.local
+frontend/.env.*.local
+
+# ---------- Bases de datos y respaldos ----------
+*.dump
+*.sql
+*.bak
+*.backup
+*.sqlite
+*.sqlite3
+*.db
+Respaldos-Danielito/
+
+# ---------- Proyecto anterior (Laravel) y documentos internos ----------
+# Copia del sistema viejo; tiene su propio repositorio git.
+/PRIMERA/
+# Informe interno de la evolución del sistema.
+/docs/*.docx
+# Archivos temporales de Office
+~$*
 
 # ---------- Herramientas de Claude Code (locales de cada máquina) ----------
-/.claude
-/.agents
-/skills-lock.json
+.claude/
+.agents/
+skills-lock.json
 
 # ---------- Editores ----------
-/.idea
-/.vscode
-/.fleet
-/.nova
-/.zed
+.idea/
+.vscode/
+.fleet/
+.nova/
+.zed/
+*.swp
 
 # ---------- Sistema operativo ----------
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # ---------- Registros ----------
 *.log
+logs/

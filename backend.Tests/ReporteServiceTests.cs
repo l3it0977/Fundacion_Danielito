@@ -98,23 +98,6 @@ public class ReporteServiceTests : IDisposable
         await Assert.ThrowsAsync<ReglaNegocioException>(() => _servicio.GenerarAsistencia(null, mes, anio));
     }
 
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData(1, 10)]
-    public async Task GenerarActividades_DevuelveUnPdf(int? grupoId, int? mes)
-    {
-        var nino = _bd.CrearNino(_grupo, "N-1");
-        _bd.CrearActividad(_maestro, new DateOnly(2026, 10, 12), nino);
-
-        AssertEsPdf(await _servicio.GenerarActividades(grupoId, mes, 2026));
-    }
-
-    [Fact]
-    public async Task GenerarActividades_GrupoInexistente_LanzaNoEncontrado()
-    {
-        await Assert.ThrowsAsync<RecursoNoEncontradoException>(() => _servicio.GenerarActividades(999, null, 2026));
-    }
-
     [Fact]
     public async Task GenerarAsistenciaPorActividad_MaestroAjeno_LanzaNoAutorizado()
     {
